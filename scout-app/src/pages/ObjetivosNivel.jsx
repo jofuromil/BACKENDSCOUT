@@ -10,7 +10,7 @@ function ObjetivosNivel() {
   const [opcionesNivel, setOpcionesNivel] = useState([]);
 
   const opcionesArea = [
-    "", // todas
+    "", // para 'Todas las áreas'
     "AFECTIVIDAD",
     "CARÁCTER",
     "CORPORALIDAD",
@@ -25,8 +25,7 @@ function ObjetivosNivel() {
     } else if (rama === "Exploradores") {
       setOpcionesNivel(["", "PISTA - SENDA", "RUMBO - TRAVESIA"]);
     } else {
-      // Pioneros y Rovers no eligen nivel
-      localStorage.setItem("nivelProgresion", "");
+      // Pioneros y Rovers no tienen nivel pero sí pueden elegir área
       navigate("/objetivos");
     }
   }, [rama, navigate]);
@@ -44,12 +43,13 @@ function ObjetivosNivel() {
         <MenuFijo />
       </div>
 
-      <h1 className="text-2xl font-bold mb-6">📘 Elegir Nivel de Progresión</h1>
+      <h1 className="text-2xl font-bold mb-6">📘 Elegir Nivel y Área</h1>
 
+      <label className="text-left w-72 mb-1 font-semibold">Nivel de Progresión</label>
       <select
         value={nivel}
         onChange={(e) => setNivel(e.target.value)}
-        className="p-3 text-lg w-72 mb-6 border rounded"
+        className="p-3 text-lg w-72 mb-4 border rounded"
       >
         {opcionesNivel.map((op, i) => (
           <option key={i} value={op}>
@@ -58,8 +58,7 @@ function ObjetivosNivel() {
         ))}
       </select>
 
-      <h1 className="text-2xl font-bold mb-4">🧭 Elegir Área de Crecimiento</h1>
-
+      <label className="text-left w-72 mb-1 font-semibold">Área de Crecimiento</label>
       <select
         value={area}
         onChange={(e) => setArea(e.target.value)}
@@ -67,7 +66,7 @@ function ObjetivosNivel() {
       >
         {opcionesArea.map((op, i) => (
           <option key={i} value={op}>
-            {op === "" ? "Todas las áreas" : op}
+            {op === "" ? "Todas las áreas" : op.charAt(0).toUpperCase() + op.slice(1)}
           </option>
         ))}
       </select>
@@ -79,7 +78,7 @@ function ObjetivosNivel() {
         Continuar
       </button>
 
-      {/* Menú fijo inferior en móviles */}
+      {/* Menú fijo inferior */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50">
         <MenuFijo />
       </div>

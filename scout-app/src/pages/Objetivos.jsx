@@ -37,19 +37,14 @@ function Objetivos() {
     if (nivelProgresion) {
       url += `&nivelProgresion=${encodeURIComponent(nivelProgresion)}`;
     }
-    if (areaSeleccionada) {
+    if (areaSeleccionada && areaSeleccionada !== "TODAS LAS AREAS") {
       url += `&area=${encodeURIComponent(areaSeleccionada)}`;
     }
 
     axios
       .get(url, { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => {
-        // Agrupar por área (orden alfabético)
-        const ordenado = [...res.data].sort((a, b) => {
-          if (a.area < b.area) return -1;
-          if (a.area > b.area) return 1;
-          return 0;
-        });
+        const ordenado = [...res.data].sort((a, b) => a.area.localeCompare(b.area));
         setObjetivos(ordenado);
       })
       .catch(() => setMensaje("❌ Error al cargar los objetivos."));
@@ -69,70 +64,86 @@ function Objetivos() {
       .catch(() => setMensaje("❌ Hubo un problema al seleccionar el objetivo."));
   };
 
+  const colores = {
+    afectividad: "#FAD4D4",
+    carácter: "#F6B36B",
+    corporalidad: "#FFF5B1",
+    creatividad: "#E1D3F9",
+    espiritualidad: "#D7F5D0",
+    sociabilidad: "#D8EEFA",
+  };
+
+  const objetivosAgrupados = objetivos.reduce((grupos, obj) => {
+    const area = obj.area?.toLowerCase() || "sin área";
+    if (!grupos[area]) grupos[area] = [];
+    grupos[area].push(obj);
+    return grupos;
+  }, {});
+
   return (
-  <div className="min-h-screen bg-white pb-20">
-    {/* Menú fijo superior en pantallas grandes */}
-    <div className="hidden lg:block fixed top-0 left-0 right-0 z-50">
-      <MenuFijo />
-    </div>
+    <div className="min-h-screen bg-white pb-20">
+      <div className="hidden lg:block fixed top-0 left-0 right-0 z-50">
+        <MenuFijo />
+      </div>
 
-    {/* Contenido principal */}
-    <div className="max-w-3xl mx-auto pt-6 px-4">
-      <h1 className="text-2xl font-bold mb-4">🎯 Seleccionar Objetivos Educativos</h1>
-      {mensaje && <p className="mb-4 text-sm text-center">{mensaje}</p>}
+      <div className="max-w-4xl mx-auto pt-6 px-4">
+        <h1 className="text-2xl font-bold mb-4 text-center">🎯 Seleccionar Objetivos Educativos</h1>
+        {mensaje && <p className="mb-4 text-sm text-center">{mensaje}</p>}
 
-      {objetivos.length === 0 ? (
-        <p>No hay objetivos disponibles para esta selección.</p>
-      ) : (
-        Object.entries(
-          objetivos.reduce((grupos, obj) => {
-            const area = obj.area || "Sin área";
-            if (!grupos[area]) grupos[area] = [];
-            grupos[area].push(obj);
-            return grupos;
-          }, {})
-        )
-          .sort(([a], [b]) => a.localeCompare(b))
-          .map(([area, objetivosArea]) => (
-            <div key={area} className="mb-8">
-              <h2 className="text-xl font-semibold mb-2 border-b-2 border-blue-400 pb-1">{area}</h2>
-              {objetivosArea.map((obj) => (
-                <div
-                  key={obj.id}
-                  className={`bg-white p-4 mb-4 rounded shadow transition ${
-                    seleccionados.includes(obj.id) ? "bg-green-100" : ""
-                  }`}
-                >
-                  <p className="font-semibold text-gray-800 mb-1">{obj.descripcion}</p>
-                  {obj.nivelProgresion && (
-                    <p className="text-sm text-gray-600 mb-1">
-                      <strong>Nivel:</strong> {obj.nivelProgresion}
-                    </p>
-                  )}
-                  <button
-                    onClick={() => seleccionar(obj.id)}
-                    disabled={seleccionados.includes(obj.id)}
-                    className={`py-2 px-4 rounded ${
-                      seleccionados.includes(obj.id)
-                        ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-green-600 hover:bg-green-700 text-white"
+        {Object.keys(objetivosAgrupados).length === 0 ? (
+          <p>No hay objetivos disponibles para esta selección.</p>
+        ) : (
+          Object.entries(objetivosAgrupados)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([area, lista]) => (
+              <div
+                key={area}
+                className="mb-8 p-4 rounded"
+                style={{ backgroundColor: colores[area] || "#F3F4F6" }}
+              >
+                <div className="flex items-center mb-4">
+                  <img
+                    src={`/img/areas/${rama.toLowerCase()}/${area}.png`}
+                    alt={area}
+                    className="w-10 h-10 mr-3"
+                  />
+                  <h2 className="text-xl font-semibold capitalize">{area}</h2>
+                </div>
+                {lista.map((obj) => (
+                  <div
+                    key={obj.id}
+                    className={`bg-white p-4 mb-4 rounded shadow transition ${
+                      seleccionados.includes(obj.id) ? "bg-green-100" : ""
                     }`}
                   >
-                    {seleccionados.includes(obj.id) ? "Seleccionado" : "Seleccionar"}
-                  </button>
-                </div>
-              ))}
-            </div>
-          ))
-      )}
-    </div>
+                    <h3 className="text-lg font-semibold">{obj.nombre}</h3>
+                    {obj.nivelProgresion && (
+                      <p className="text-sm italic mb-1">Nivel: {obj.nivelProgresion}</p>
+                    )}
+                    <p className="mb-2">{obj.descripcion}</p>
+                    <button
+                      onClick={() => seleccionar(obj.id)}
+                      disabled={seleccionados.includes(obj.id)}
+                      className={`py-2 px-4 rounded ${
+                        seleccionados.includes(obj.id)
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-green-600 hover:bg-green-700 text-white"
+                      }`}
+                    >
+                      {seleccionados.includes(obj.id) ? "Seleccionado" : "Seleccionar"}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ))
+        )}
+      </div>
 
-    {/* Menú fijo inferior en móviles */}
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50">
-      <MenuFijo />
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50">
+        <MenuFijo />
+      </div>
     </div>
-  </div>
-);
+  );
 }
 
 export default Objetivos;

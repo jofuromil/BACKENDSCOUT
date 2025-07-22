@@ -1,6 +1,8 @@
 using BackendScout.Data;
 using BackendScout.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
+using System.Text;
 
 namespace BackendScout.Services
 {
@@ -14,27 +16,41 @@ namespace BackendScout.Services
         }
 
         // Nuevo método principal de filtrado por Rama y Nivel de Progresión
-        public async Task<List<ObjetivoEducativo>> ObtenerPorRamaYNivel(string rama, string? nivelProgresion, string? area = null)
+private string Normalizar(string texto)
 {
-    var query = _context.ObjetivosEducativos
-        .Where(o => o.Rama.ToLower() == rama.ToLower());
+    return new string(texto
+        .Normalize(NormalizationForm.FormD)
+        .Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+        .ToArray())
+        .ToLowerInvariant();
+}
+
+public async Task<List<ObjetivoEducativo>> ObtenerPorRamaYNivel(string rama, string? nivelProgresion, string? area = null)
+{
+    var objetivos = await _context.ObjetivosEducativos
+        .Where(o => o.Rama.ToLower() == rama.ToLower())
+        .OrderBy(o => o.Area)
+        .ThenBy(o => o.NivelProgresion)
+        .ThenBy(o => o.Descripcion)
+        .ToListAsync();
 
     if (!string.IsNullOrEmpty(nivelProgresion))
     {
-        query = query.Where(o => o.NivelProgresion.ToLower() == nivelProgresion.ToLower());
+        objetivos = objetivos
+            .Where(o => o.NivelProgresion != null && o.NivelProgresion.ToLower() == nivelProgresion.ToLower())
+            .ToList();
     }
 
     if (!string.IsNullOrEmpty(area))
     {
-        query = query.Where(o => o.Area.ToLower() == area.ToLower());
+        var areaNormalizada = Normalizar(area);
+        objetivos = objetivos
+            .Where(o => o.Area != null && Normalizar(o.Area) == areaNormalizada)
+            .ToList();
     }
 
-    return await query
-        .OrderBy(o => o.Area)
-        .ThenBy(o => o.Descripcion)
-        .ToListAsync();
+    return objetivos;
 }
-
 
         public async Task<ObjetivoSeleccionado> SeleccionarObjetivo(Guid usuarioId, Guid objetivoId)
         {
