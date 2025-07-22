@@ -53,6 +53,18 @@ public class EspecialidadService
         .ThenInclude(r => r.Especialidad)
         .ToListAsync();
 
+    // Cargar especialidades únicas involucradas
+    var especialidadesInvolucradas = cumplidos
+        .Select(rc => rc.Requisito.Especialidad)
+        .Distinct()
+        .ToList();
+
+    // Cargar requisitos de todas las especialidades involucradas (para evitar problemas de carga perezosa)
+    foreach (var esp in especialidadesInvolucradas)
+    {
+        _context.Entry(esp).Collection(e => e.Requisitos).Load();
+    }
+
     var resumen = cumplidos
         .GroupBy(rc => rc.Requisito.Especialidad)
         .Select(g => new ResumenEspecialidadDto
@@ -65,8 +77,8 @@ public class EspecialidadService
             FechaCumplida = g.All(rc => rc.AprobadoPorDirigente)
                 ? g.Max(rc => rc.FechaAprobacion)
                 : null,
-            TotalRequisitos = g.Key.Requisitos.Count,
-            ImagenUrl = g.Key.ImagenUrl.StartsWith("/img/")
+            TotalRequisitos = g.Key.Requisitos?.Count ?? 0,
+            ImagenUrl = g.Key.ImagenUrl?.StartsWith("/img/") == true
                 ? g.Key.ImagenUrl
                 : $"/img/especialidades/{g.Key.Rama.ToLower()}/{g.Key.ImagenUrl}"
         })
@@ -74,7 +86,6 @@ public class EspecialidadService
 
     return resumen;
 }
-
 
     public async Task<object?> ObtenerAvanceEspecialidadAsync(Guid especialidadId, string scoutId)
     {
