@@ -19,27 +19,30 @@ namespace BackendScout.Dtos
     }
 
     public class UserDto
-{
-    public Guid Id { get; set; }
+    {
+        public Guid Id { get; set; }
 
-    public string? CI { get; set; }  // ✅ Nuevo campo agregado
+        public string? CI { get; set; }                  
+        public string? ComplementoCI { get; set; }
 
-    public string NombreCompleto { get; set; }
-    public DateTime FechaNacimiento { get; set; }
-    public string Telefono { get; set; }
-    public string Correo { get; set; }
-    public string Ciudad { get; set; }
-    public string Tipo { get; set; }
-    public string Rama { get; set; }
-    public string? UnidadNombre { get; set; }
+        public string NombreCompleto { get; set; }
+        public DateTime FechaNacimiento { get; set; }
+        public string Telefono { get; set; }
+        public string Correo { get; set; }
+        public string Ciudad { get; set; }
+        public string Tipo { get; set; }
+        public string Rama { get; set; }
+        public string? UnidadNombre { get; set; }
 
-    // Campos adicionales del perfil
+        // Campos adicionales del perfil
         public string? Direccion { get; set; }
-    public string? InstitucionEducativa { get; set; }
-    public string? NivelEstudios { get; set; }
-    public string? Genero { get; set; }
-    public string? Profesion { get; set; }   // SOLO dirigentes
-    public string? Ocupacion { get; set; }   // SOLO dirigentes
-}
+        public string? InstitucionEducativa { get; set; }
+        public string? NivelEstudios { get; set; }
+        public string? Genero { get; set; }
+        public string? Profesion { get; set; }
+        public string? Ocupacion { get; set; }
 
+        // ✅ Campo requerido para el panel de grupo scout
+        public bool EsAdminGrupo { get; set; } = false;
+    }
 }

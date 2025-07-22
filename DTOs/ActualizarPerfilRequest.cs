@@ -2,7 +2,8 @@ namespace BackendScout.DTOs
 {
     public class ActualizarPerfilRequest
     {
-        public string? CI { get; set; }
+        public string? CI { get; set; }                  // Solo números
+        public string? ComplementoCI { get; set; }       // Letras o símbolos como guión
 
         public string NombreCompleto { get; set; }
         public DateTime FechaNacimiento { get; set; }

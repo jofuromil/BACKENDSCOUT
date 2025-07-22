@@ -177,6 +177,7 @@ namespace BackendScout.Services
             {
                 Id = user.Id,
                 CI = user.CI,
+                ComplementoCI = user.ComplementoCI, // ✅ Campo agregado
                 NombreCompleto = user.NombreCompleto,
                 FechaNacimiento = user.FechaNacimiento,
                 Telefono = user.Telefono,
@@ -199,7 +200,8 @@ namespace BackendScout.Services
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == usuarioId);
             if (user == null) return false;
 
-            user.CI = request.CI; // ✅ Nuevo campo agregado
+            user.CI = request.CI;
+            user.ComplementoCI = request.ComplementoCI; // ✅ Campo agregado
             user.NombreCompleto = request.NombreCompleto;
             user.FechaNacimiento = request.FechaNacimiento;
             user.Telefono = request.Telefono;
@@ -214,6 +216,7 @@ namespace BackendScout.Services
             await _context.SaveChangesAsync();
             return true;
         }
+
         public async Task ActualizarPassword(User usuario)
         {
             _context.Users.Update(usuario);
@@ -255,6 +258,7 @@ namespace BackendScout.Services
             var dirigentes = await _context.Users
                 .Include(u => u.Unidad)
                     .ThenInclude(u => u.GrupoScout)
+                .Include(u => u.GrupoScoutUsuarios)
                 .Where(u =>
                     u.Tipo == "Dirigente" &&
                     u.Unidad != null &&
@@ -264,13 +268,13 @@ namespace BackendScout.Services
                 {
                     Id = u.Id,
                     CI = u.CI,
+                    ComplementoCI = u.ComplementoCI,
                     NombreCompleto = u.NombreCompleto,
                     FechaNacimiento = u.FechaNacimiento,
                     Telefono = u.Telefono,
                     Correo = u.Correo,
                     Ciudad = u.Ciudad,
                     Tipo = u.Tipo,
-                    
                     Rama = u.Rama,
                     UnidadNombre = u.Unidad.Nombre,
                     Direccion = u.Direccion,
@@ -278,7 +282,11 @@ namespace BackendScout.Services
                     NivelEstudios = u.NivelEstudios,
                     Genero = u.Genero,
                     Profesion = u.Profesion,
-                    Ocupacion = u.Ocupacion
+                    Ocupacion = u.Ocupacion,
+
+                    // ✅ Campo nuevo: admin de grupo
+                    EsAdminGrupo = u.GrupoScoutUsuarios
+                        .Any(g => g.GrupoScoutId == grupoScoutId && g.EsAdminGrupo)
                 })
                 .ToListAsync();
 

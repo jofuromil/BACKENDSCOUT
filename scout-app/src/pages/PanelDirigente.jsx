@@ -153,7 +153,7 @@ function PanelDirigente() {
             Ver / Editar Perfil
           </button>
           <button
-            onClick={() => navigate("/login")}
+            onClick={() => navigate("/")}
             className="border-2 border-red-600 text-red-700 px-4 py-2 rounded-full w-full"
           >
             Cerrar sesión

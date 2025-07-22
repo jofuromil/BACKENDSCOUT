@@ -21,6 +21,20 @@ export default function PerfilUsuario() {
   };
 
   const guardarCambios = () => {
+    // Validaciones básicas
+    if (!/^\d+$/.test(perfil.ci)) {
+      alert("El Carnet de Identidad debe contener solo números");
+      return;
+    }
+    if (!/^\d+$/.test(perfil.telefono)) {
+      alert("El número de teléfono debe contener solo números");
+      return;
+    }
+    if (!["Femenino", "Masculino"].includes(perfil.genero)) {
+      alert("Debe seleccionar un género válido");
+      return;
+    }
+
     axios
       .put("/api/users/perfil", perfil, {
         headers: { Authorization: `Bearer ${token}` },
@@ -36,7 +50,6 @@ export default function PerfilUsuario() {
 
   return (
     <div className="min-h-screen bg-white pb-20 relative">
-      {/* Menú fijo superior */}
       <div className="hidden lg:block fixed top-0 left-0 right-0 z-50">
         <MenuFijo />
       </div>
@@ -47,16 +60,32 @@ export default function PerfilUsuario() {
         <div className="grid grid-cols-1 gap-4">
           <Campo nombre="Nombre completo" valor={perfil.nombreCompleto} name="nombreCompleto" editable={editando} onChange={handleChange} />
           <Campo nombre="Carnet de Identidad" valor={perfil.ci} name="ci" editable={editando} onChange={handleChange} />
+          <Campo nombre="Complemento del C.I." valor={perfil.complementoCI} name="complementoCI" editable={editando} onChange={handleChange} />
           <Campo nombre="Fecha de nacimiento" valor={perfil.fechaNacimiento ? perfil.fechaNacimiento.slice(0, 10) : ""} name="fechaNacimiento" tipo="date" editable={editando} onChange={handleChange} />
           <Campo nombre="Teléfono" valor={perfil.telefono} name="telefono" editable={editando} onChange={handleChange} />
           <Campo nombre="Ciudad" valor={perfil.ciudad} name="ciudad" editable={editando} onChange={handleChange} />
           <Campo nombre="Dirección" valor={perfil.direccion} name="direccion" editable={editando} onChange={handleChange} />
-          <Campo nombre="Género" valor={perfil.genero} name="genero" editable={editando} onChange={handleChange} />
+
+          {/* Género como select */}
+          <div>
+            <label className="font-semibold">Género</label>
+            <select
+              className="w-full p-2 border rounded"
+              name="genero"
+              value={perfil.genero || ""}
+              disabled={!editando}
+              onChange={handleChange}
+            >
+              <option value="">Seleccionar...</option>
+              <option value="Femenino">Femenino</option>
+              <option value="Masculino">Masculino</option>
+            </select>
+          </div>
 
           {perfil.tipo === "Scout" ? (
             <>
-              <Campo nombre="Institución educativa" valor={perfil.institucionEducativa} name="institucionEducativa" editable={editando} onChange={handleChange} />
-              <Campo nombre="Nivel de estudios" valor={perfil.nivelEstudios} name="nivelEstudios" editable={editando} onChange={handleChange} />
+              <Campo nombre="Colegio/Universidad" valor={perfil.institucionEducativa} name="institucionEducativa" editable={editando} onChange={handleChange} />
+              <Campo nombre="Curso" valor={perfil.nivelEstudios} name="nivelEstudios" editable={editando} onChange={handleChange} />
             </>
           ) : (
             <>
@@ -93,7 +122,6 @@ export default function PerfilUsuario() {
         </div>
       </div>
 
-      {/* Menú fijo inferior en móviles */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50">
         <MenuFijo />
       </div>

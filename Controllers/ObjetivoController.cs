@@ -30,9 +30,12 @@ namespace BackendScout.Controllers
         }
 
         [HttpGet("listar")]
-        public async Task<IActionResult> ListarPorRamaYNivel([FromQuery] string rama, [FromQuery] string? nivelProgresion)
+        public async Task<IActionResult> ListarPorRamaYNivel(
+            [FromQuery] string rama,
+            [FromQuery] string? nivelProgresion,
+            [FromQuery] string? area)
         {
-            var objetivos = await _service.ObtenerPorRamaYNivel(rama, nivelProgresion);
+            var objetivos = await _service.ObtenerPorRamaYNivel(rama, nivelProgresion, area);
             return Ok(objetivos);
         }
 

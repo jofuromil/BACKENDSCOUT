@@ -14,18 +14,27 @@ namespace BackendScout.Services
         }
 
         // Nuevo método principal de filtrado por Rama y Nivel de Progresión
-        public async Task<List<ObjetivoEducativo>> ObtenerPorRamaYNivel(string rama, string? nivelProgresion)
-        {
-            var query = _context.ObjetivosEducativos
-                .Where(o => o.Rama.ToLower() == rama.ToLower());
+        public async Task<List<ObjetivoEducativo>> ObtenerPorRamaYNivel(string rama, string? nivelProgresion, string? area = null)
+{
+    var query = _context.ObjetivosEducativos
+        .Where(o => o.Rama.ToLower() == rama.ToLower());
 
-            if (!string.IsNullOrEmpty(nivelProgresion))
-            {
-                query = query.Where(o => o.NivelProgresion.ToLower() == nivelProgresion.ToLower());
-            }
+    if (!string.IsNullOrEmpty(nivelProgresion))
+    {
+        query = query.Where(o => o.NivelProgresion.ToLower() == nivelProgresion.ToLower());
+    }
 
-            return await query.ToListAsync();
-        }
+    if (!string.IsNullOrEmpty(area))
+    {
+        query = query.Where(o => o.Area.ToLower() == area.ToLower());
+    }
+
+    return await query
+        .OrderBy(o => o.Area)
+        .ThenBy(o => o.Descripcion)
+        .ToListAsync();
+}
+
 
         public async Task<ObjetivoSeleccionado> SeleccionarObjetivo(Guid usuarioId, Guid objetivoId)
         {
