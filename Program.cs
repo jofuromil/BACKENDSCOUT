@@ -77,6 +77,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // ✅ Servicios personalizados
+builder.Services.AddScoped<GrupoScoutService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<UnidadService>();
 builder.Services.AddScoped<FichaMedicaService>();

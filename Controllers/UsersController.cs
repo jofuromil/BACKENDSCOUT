@@ -111,11 +111,13 @@ namespace BackendScout.Controllers
                     usuario.Unidad.Nombre,
                     usuario.Unidad.CodigoUnidad,
                     usuario.Unidad.Rama,
+                    grupoId = usuario.Unidad.GrupoScoutId,
                     grupoScout = usuario.Unidad.GrupoScout?.Nombre ?? usuario.Unidad.GrupoScoutNombre,
                     distrito = usuario.Unidad.NivelDistrito?.Nombre
                 } : null
             });
         }
+
 
         [HttpGet("{id}")]
         [Authorize]

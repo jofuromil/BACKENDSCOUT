@@ -66,7 +66,9 @@ namespace BackendScout.Services
             return await _context.Users
                 .Include(u => u.GrupoScoutUsuarios)
                 .Include(u => u.Unidad)
-                    .ThenInclude(u => u.NivelDistrito) // 👈 incluir la relación
+                    .ThenInclude(u => u.GrupoScout)       // ✅ Añadir esta línea
+                .Include(u => u.Unidad)
+                    .ThenInclude(u => u.NivelDistrito)   // ✅ Ya estaba, lo mantenemos
                 .FirstOrDefaultAsync(u => u.Id == id);
         }
 

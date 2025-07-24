@@ -3,6 +3,7 @@ using BackendScout.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using System.Text;
+using BackendScout.Dtos.Objetivos;
 
 namespace BackendScout.Services
 {
@@ -16,41 +17,41 @@ namespace BackendScout.Services
         }
 
         // Nuevo método principal de filtrado por Rama y Nivel de Progresión
-private string Normalizar(string texto)
-{
-    return new string(texto
-        .Normalize(NormalizationForm.FormD)
-        .Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
-        .ToArray())
-        .ToLowerInvariant();
-}
+        private string Normalizar(string texto)
+        {
+            return new string(texto
+                .Normalize(NormalizationForm.FormD)
+                .Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+                .ToArray())
+                .ToLowerInvariant();
+        }
 
-public async Task<List<ObjetivoEducativo>> ObtenerPorRamaYNivel(string rama, string? nivelProgresion, string? area = null)
-{
-    var objetivos = await _context.ObjetivosEducativos
-        .Where(o => o.Rama.ToLower() == rama.ToLower())
-        .OrderBy(o => o.Area)
-        .ThenBy(o => o.NivelProgresion)
-        .ThenBy(o => o.Descripcion)
-        .ToListAsync();
+        public async Task<List<ObjetivoEducativo>> ObtenerPorRamaYNivel(string rama, string? nivelProgresion, string? area = null)
+        {
+            var objetivos = await _context.ObjetivosEducativos
+                .Where(o => o.Rama.ToLower() == rama.ToLower())
+                .OrderBy(o => o.Area)
+                .ThenBy(o => o.NivelProgresion)
+                .ThenBy(o => o.Descripcion)
+                .ToListAsync();
 
-    if (!string.IsNullOrEmpty(nivelProgresion))
-    {
-        objetivos = objetivos
-            .Where(o => o.NivelProgresion != null && o.NivelProgresion.ToLower() == nivelProgresion.ToLower())
-            .ToList();
-    }
+            if (!string.IsNullOrEmpty(nivelProgresion))
+            {
+                objetivos = objetivos
+                    .Where(o => o.NivelProgresion != null && o.NivelProgresion.ToLower() == nivelProgresion.ToLower())
+                    .ToList();
+            }
 
-    if (!string.IsNullOrEmpty(area))
-    {
-        var areaNormalizada = Normalizar(area);
-        objetivos = objetivos
-            .Where(o => o.Area != null && Normalizar(o.Area) == areaNormalizada)
-            .ToList();
-    }
+            if (!string.IsNullOrEmpty(area))
+            {
+                var areaNormalizada = Normalizar(area);
+                objetivos = objetivos
+                    .Where(o => o.Area != null && Normalizar(o.Area) == areaNormalizada)
+                    .ToList();
+            }
 
-    return objetivos;
-}
+            return objetivos;
+        }
 
         public async Task<ObjetivoSeleccionado> SeleccionarObjetivo(Guid usuarioId, Guid objetivoId)
         {
@@ -107,7 +108,7 @@ public async Task<List<ObjetivoEducativo>> ObtenerPorRamaYNivel(string rama, str
             }
 
             var historial = await _context.ObjetivosSeleccionados
-                .Where(s => s.UsuarioId == usuarioId && 
+                .Where(s => s.UsuarioId == usuarioId &&
                         (!soloValidados.HasValue || s.Validado == soloValidados.Value))
                 .Include(s => s.ObjetivoEducativo)
                 .Include(s => s.DirigenteValidador)
@@ -200,32 +201,74 @@ public async Task<List<ObjetivoEducativo>> ObtenerPorRamaYNivel(string rama, str
         }
         public async Task<List<object>> ObtenerResumenPorScout(Guid usuarioId)
         {
-    var objetivos = await _context.ObjetivosSeleccionados
-        .Where(o => o.UsuarioId == usuarioId)
-        .Include(o => o.ObjetivoEducativo)
-        .ToListAsync();
+            var objetivos = await _context.ObjetivosSeleccionados
+                .Where(o => o.UsuarioId == usuarioId)
+                .Include(o => o.ObjetivoEducativo)
+                .ToListAsync();
 
-    var resumen = objetivos
-        .Where(o => o.ObjetivoEducativo != null)
-        .GroupBy(o => new
-        {
-            Area = o.ObjetivoEducativo.Area,
-            Nivel = o.ObjetivoEducativo.NivelProgresion
-        })
-        .Select(g => new
-        {
-            areaCrecimiento = g.Key.Area,
-            nivelProgresion = g.Key.Nivel,
-            total = g.Count(),
-            validados = g.Count(o => o.Validado),
-            pendientes = g.Count(o => !o.Validado)
-        })
-        .OrderBy(r => r.nivelProgresion)
-        .ThenBy(r => r.areaCrecimiento)
-        .ToList();
+            var resumen = objetivos
+                .Where(o => o.ObjetivoEducativo != null)
+                .GroupBy(o => new
+                {
+                    Area = o.ObjetivoEducativo.Area,
+                    Nivel = o.ObjetivoEducativo.NivelProgresion
+                })
+                .Select(g => new
+                {
+                    areaCrecimiento = g.Key.Area,
+                    nivelProgresion = g.Key.Nivel,
+                    total = g.Count(),
+                    validados = g.Count(o => o.Validado),
+                    pendientes = g.Count(o => !o.Validado)
+                })
+                .OrderBy(r => r.nivelProgresion)
+                .ThenBy(r => r.areaCrecimiento)
+                .ToList();
 
-    return resumen.Cast<object>().ToList();
-    }
+            return resumen.Cast<object>().ToList();
+        }
+        public async Task<List<ObjetivoPendienteDto>> ObtenerPendientesDtoPorScout(Guid usuarioId)
+        {
+            var pendientes = await _context.ObjetivosSeleccionados
+                .Where(o => o.UsuarioId == usuarioId && !o.Validado)
+                .Include(o => o.ObjetivoEducativo)
+                .Select(o => new ObjetivoPendienteDto
+                {
+                    Descripcion = o.ObjetivoEducativo.Descripcion,
+                    AreaCrecimiento = o.ObjetivoEducativo.Area,
+                    FechaSeleccion = o.FechaSeleccion
+                })
+                .ToListAsync();
+
+            return pendientes;
+        }
+        public async Task<List<ObjetivoUnidadPendienteDto>> ObtenerPendientesPorUnidadDto(Guid dirigenteId)
+        {
+            var dirigente = await _context.Users
+                .Include(u => u.Unidad)
+                .FirstOrDefaultAsync(u => u.Id == dirigenteId);
+
+            if (dirigente == null || dirigente.UnidadId == null)
+                throw new Exception("El dirigente no está asignado a una unidad.");
+
+            var pendientes = await _context.ObjetivosSeleccionados
+                .Where(o => o.Usuario.UnidadId == dirigente.UnidadId && !o.Validado)
+                .Include(o => o.ObjetivoEducativo)
+                .Include(o => o.Usuario)
+                .Select(o => new ObjetivoUnidadPendienteDto
+                {
+                    IdSeleccion = o.Id,
+                    NombreScout = o.Usuario.NombreCompleto,
+                    Rama = o.Usuario.Rama,
+                    Descripcion = o.ObjetivoEducativo.Descripcion,
+                    AreaCrecimiento = o.ObjetivoEducativo.Area,
+                    NivelProgresion = o.ObjetivoEducativo.NivelProgresion,
+                    FechaSeleccion = o.FechaSeleccion
+                })
+                .ToListAsync();
+
+            return pendientes;
+        }       
 
     }
 }

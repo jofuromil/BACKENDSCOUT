@@ -21,12 +21,30 @@ function Inicio() {
       });
 
       const data = res.data;
+      console.log("DATA COMPLETA:", data);
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("usuarioId", data.user.id);
       localStorage.setItem("tipo", data.user.tipo);
       localStorage.setItem("rama", data.user.rama || "");
       localStorage.setItem("unidadId", data.user.unidadId || "");
+
+      // ✅ Nuevo: llamar a /me para obtener la unidad completa
+      const meResponse = await axios.get("http://localhost:8080/api/users/me", {
+        headers: {
+          Authorization: `Bearer ${data.token}`,
+        },
+      });
+
+      const usuario = meResponse.data;
+      console.log("✅ DATA.ME:", usuario);
+      console.log("✅ DATA.ME.UNIDAD:", usuario.unidad);
+
+      if (usuario.unidad?.grupoId) {
+        localStorage.setItem("grupoId", usuario.unidad.grupoId);
+        localStorage.setItem("grupoScout", usuario.unidad.grupoScout);
+        localStorage.setItem("distrito", usuario.unidad.distrito);
+      }
 
       if (!data.user.unidadId) {
         navigate("/unidad");

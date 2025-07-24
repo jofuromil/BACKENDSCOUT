@@ -15,11 +15,13 @@ namespace BackendScout.Controllers
     public class GrupoScoutController : ControllerBase
     {
         private readonly UserService _userService;
+        private readonly GrupoScoutService _grupoScoutService;
         private readonly AppDbContext _context;
 
-        public GrupoScoutController(UserService userService, AppDbContext context)
+        public GrupoScoutController(UserService userService, GrupoScoutService grupoScoutService, AppDbContext context)
         {
             _userService = userService;
+            _grupoScoutService = grupoScoutService;
             _context = context;
         }
 
@@ -31,92 +33,120 @@ namespace BackendScout.Controllers
             var dirigentes = await _userService.ObtenerDirigentesDelGrupo(Guid.Parse(userId));
             return Ok(dirigentes);
         }
-        private Guid ObtenerUsuarioIdDesdeToken()
+
+        [HttpGet("ver-scouts/{usuarioId}")]
+        public async Task<IActionResult> VerScoutsDelGrupo(Guid usuarioId)
         {
-            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
-            return Guid.Parse(userIdClaim.Value);
+            var scouts = await _userService.ObtenerScoutsDelGrupoAsync(usuarioId);
+            return Ok(scouts);
         }
-
-            [HttpGet("ver-scouts/{usuarioId}")]
-            public async Task<IActionResult> VerScoutsDelGrupo(Guid usuarioId)
-            {
-                var scouts = await _userService.ObtenerScoutsDelGrupoAsync(usuarioId);
-                return Ok(scouts);
-            }
-
 
         [HttpPut("asignar-admingrupo/{userId}")]
         [Authorize(Roles = "Dirigente")]
         public async Task<IActionResult> AsignarAdminGrupo(Guid userId)
         {
-    var usuarioActualId = ObtenerUsuarioIdDesdeToken(); // método auxiliar
-    var usuarioActual = await _context.Users
-        .Include(u => u.GrupoScoutUsuarios)
-        .FirstOrDefaultAsync(u => u.Id == usuarioActualId);
+            var usuarioActualId = ObtenerUsuarioIdDesdeToken();
+            var usuarioActual = await _context.Users
+                .Include(u => u.GrupoScoutUsuarios)
+                .FirstOrDefaultAsync(u => u.Id == usuarioActualId);
 
-    if (usuarioActual == null)
-        return Unauthorized();
+            if (usuarioActual == null)
+                return Unauthorized();
 
-    // Obtener el grupo al que pertenece el usuario actual
-    var grupoUsuario = usuarioActual.GrupoScoutUsuarios.FirstOrDefault();
-    if (grupoUsuario == null)
-        return BadRequest("No estás vinculado a ningún grupo scout.");
+            var grupoUsuario = usuarioActual.GrupoScoutUsuarios.FirstOrDefault();
+            if (grupoUsuario == null)
+                return BadRequest("No estás vinculado a ningún grupo scout.");
 
-    var grupoScoutId = grupoUsuario.GrupoScoutId;
+            var grupoScoutId = grupoUsuario.GrupoScoutId;
 
-    // Buscar si ya existe el registro
-    var existente = await _context.GrupoScoutUsuarios
-        .FirstOrDefaultAsync(g => g.GrupoScoutId == grupoScoutId && g.UsuarioId == userId);
+            var existente = await _context.GrupoScoutUsuarios
+                .FirstOrDefaultAsync(g => g.GrupoScoutId == grupoScoutId && g.UsuarioId == userId);
 
-    if (existente != null)
-    {
-        existente.EsAdminGrupo = true;
-    }
-    else
-    {
-        _context.GrupoScoutUsuarios.Add(new GrupoScoutUsuario
-        {
-            UsuarioId = userId,
-            GrupoScoutId = grupoScoutId,
-            EsAdminGrupo = true
-        });
-    }
+            if (existente != null)
+            {
+                existente.EsAdminGrupo = true;
+            }
+            else
+            {
+                _context.GrupoScoutUsuarios.Add(new GrupoScoutUsuario
+                {
+                    UsuarioId = userId,
+                    GrupoScoutId = grupoScoutId,
+                    EsAdminGrupo = true
+                });
+            }
 
-    await _context.SaveChangesAsync();
-    return Ok();
-}
-
-
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
 
         [HttpPut("quitar-admingrupo/{userId}")]
-[Authorize(Roles = "Dirigente")]
-public async Task<IActionResult> QuitarAdminGrupo(Guid userId)
-{
-    var usuarioActualId = ObtenerUsuarioIdDesdeToken();
-    var usuarioActual = await _context.Users
-        .Include(u => u.GrupoScoutUsuarios)
-        .FirstOrDefaultAsync(u => u.Id == usuarioActualId);
+        [Authorize(Roles = "Dirigente")]
+        public async Task<IActionResult> QuitarAdminGrupo(Guid userId)
+        {
+            var usuarioActualId = ObtenerUsuarioIdDesdeToken();
+            var usuarioActual = await _context.Users
+                .Include(u => u.GrupoScoutUsuarios)
+                .FirstOrDefaultAsync(u => u.Id == usuarioActualId);
 
-    if (usuarioActual == null)
-        return Unauthorized();
+            if (usuarioActual == null)
+                return Unauthorized();
 
-    var grupoUsuario = usuarioActual.GrupoScoutUsuarios.FirstOrDefault();
-    if (grupoUsuario == null)
-        return BadRequest("No estás vinculado a ningún grupo scout.");
+            var grupoUsuario = usuarioActual.GrupoScoutUsuarios.FirstOrDefault();
+            if (grupoUsuario == null)
+                return BadRequest("No estás vinculado a ningún grupo scout.");
 
-    var grupoScoutId = grupoUsuario.GrupoScoutId;
+            var grupoScoutId = grupoUsuario.GrupoScoutId;
 
-    var existente = await _context.GrupoScoutUsuarios
-        .FirstOrDefaultAsync(g => g.GrupoScoutId == grupoScoutId && g.UsuarioId == userId);
+            var existente = await _context.GrupoScoutUsuarios
+                .FirstOrDefaultAsync(g => g.GrupoScoutId == grupoScoutId && g.UsuarioId == userId);
 
-    if (existente == null)
-        return NotFound("El usuario no es administrador del grupo.");
+            if (existente == null)
+                return NotFound("El usuario no es administrador del grupo.");
 
-    existente.EsAdminGrupo = false;
-    await _context.SaveChangesAsync();
+            existente.EsAdminGrupo = false;
+            await _context.SaveChangesAsync();
 
-    return Ok();
-}
+            return Ok();
+        }
 
+        [HttpGet("{grupoId}/resumen-unidades")]
+        [Authorize(Roles = "Dirigente")]
+        public async Task<IActionResult> VerResumenUnidades(string grupoId)
+        {
+            try
+            {
+                var resumen = await _grupoScoutService.ObtenerResumenUnidadesPorGrupoAsync(grupoId);
+                return Ok(resumen);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = "Error al obtener el resumen de unidades", error = ex.Message });
+            }
+        }
+
+        private Guid ObtenerUsuarioIdDesdeToken()
+        {
+            var userIdClaim = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
+            return Guid.Parse(userIdClaim.Value);
+        }
+        [HttpGet("{id}")]
+        [Authorize(Roles = "Dirigente")]
+        public async Task<IActionResult> ObtenerGrupoScoutPorId(int id)
+        {
+            var grupo = await _context.GruposScout
+                .Include(g => g.NivelDistrito)
+                .FirstOrDefaultAsync(g => g.Id == id);
+
+            if (grupo == null)
+                return NotFound("Grupo scout no encontrado");
+
+            return Ok(new
+            {
+                grupo.Id,
+                grupo.Nombre,
+                Distrito = grupo.NivelDistrito?.Nombre
+            });
+        }
     }
 }

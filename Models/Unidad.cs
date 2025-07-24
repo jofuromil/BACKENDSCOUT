@@ -23,6 +23,8 @@ namespace BackendScout.Models
         public Guid DirigenteId { get; set; }
 
         public ICollection<Evento> EventosOrganizados { get; set; }
+        // ⬆️ Agregamos esta relación para que GrupoScoutService pueda contar usuarios
+        public ICollection<User> Users { get; set; } = new List<User>();
     }
 }
 

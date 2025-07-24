@@ -287,10 +287,44 @@ namespace BackendScout.Controllers
                 return BadRequest(new { mensaje = ex.Message });
             }
         }
+        [HttpGet("pendientes-scout-dto")]
+        public async Task<IActionResult> PendientesPorScoutDTO(string usuarioId)
+        {
+            try
+            {
+                var id = Guid.Parse(usuarioId);
+                var pendientes = await _service.ObtenerPendientesDtoPorScout(id);
+                return Ok(pendientes);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Error en pendientes-scout-dto: " + ex.Message);
+                return StatusCode(500, "Error interno en el servidor");
+            }
+        }
+        [HttpGet("pendientes-por-unidad-dto")]
+        [Authorize(Roles = "Dirigente")]
+        public async Task<IActionResult> ObtenerPendientesPorUnidadDto()
+        {
+            try
+            {
+                var dirigenteId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(dirigenteId)) return Unauthorized();
+
+                var resultado = await _service.ObtenerPendientesPorUnidadDto(Guid.Parse(dirigenteId));
+                return Ok(resultado);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Error en pendientes-por-unidad-dto: " + ex.Message);
+                return StatusCode(500, "Error interno al obtener los objetivos pendientes");
+            }
+        }
     }
 
     public class SeleccionObjetivoDto
     {
         public Guid ObjetivoEducativoId { get; set; }
     }
+    
 }

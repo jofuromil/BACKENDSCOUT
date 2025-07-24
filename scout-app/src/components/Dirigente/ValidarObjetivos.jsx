@@ -12,7 +12,7 @@ function ValidarObjetivos() {
 
   const cargarTodosLosPendientes = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/api/Objetivo/pendientes-por-unidad", {
+      const response = await axios.get("http://localhost:8080/api/Objetivo/pendientes-por-unidad-dto", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setObjetivosPendientes(response.data);
@@ -53,20 +53,23 @@ function ValidarObjetivos() {
         <ul className="space-y-4">
           {objetivosPendientes.map((obj) => (
             <li
-              key={obj.id}
+              key={obj.idSeleccion}
               className="border p-3 rounded shadow flex justify-between items-start"
             >
               <div>
                 <p className="font-semibold text-blue-800">
-                  Scout: {obj.usuario?.nombreCompleto || "(sin nombre)"}
+                  Scout: {obj.nombreScout || "(sin nombre)"}
                 </p>
-                <p className="font-medium mt-1">{obj.objetivoEducativo.descripcion}</p>
+                <p className="font-medium mt-1">{obj.descripcion}</p>
                 <p className="text-sm text-gray-600">
-                  Área: {obj.objetivoEducativo.area} – Nivel: {obj.objetivoEducativo.nivelProgresion || "N/A"}
+                  Área: {obj.areaCrecimiento} – Nivel: {obj.nivelProgresion || "N/A"}
+                </p>
+                <p className="text-sm text-gray-500">
+                  Selección: {new Date(obj.fechaSeleccion).toLocaleDateString()}
                 </p>
               </div>
               <button
-                onClick={() => validarObjetivo(obj.id)}
+                onClick={() => validarObjetivo(obj.idSeleccion)}
                 disabled={cargando}
                 className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50"
               >

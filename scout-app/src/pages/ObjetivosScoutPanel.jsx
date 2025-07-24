@@ -20,6 +20,7 @@ const ObjetivosScoutPanel = () => {
   };
 
   useEffect(() => {
+    console.log("🟨 usuarioId:", usuarioId);
     const fetchData = async () => {
       try {
         if (scoutId) {
@@ -32,7 +33,7 @@ const ObjetivosScoutPanel = () => {
           config
         );
         const resPendientes = await axios.get(
-          `/api/Objetivo/pendientes-scout?usuarioId=${usuarioId}`,
+          `/api/Objetivo/pendientes-scout-dto?usuarioId=${usuarioId}`,
           config
         );
         const resAprobados = await axios.get(
@@ -108,8 +109,8 @@ const ObjetivosScoutPanel = () => {
               <ul className="space-y-2">
                 {pendientes.map((obj, i) => (
                   <li key={i} className="bg-yellow-100 p-3 rounded shadow">
-                    <strong>{obj.objetivoEducativo?.area || "Área no definida"}</strong>:{" "}
-                    {obj.objetivoEducativo?.descripcion || "Sin descripción"}
+                    <strong>{obj.areaCrecimiento || "Área no definida"}</strong>:{" "}
+{obj.descripcion || "Sin descripción"}
                     <p className="text-sm text-gray-600 mt-1">
                       Selección: {obj.fechaSeleccion ? new Date(obj.fechaSeleccion).toLocaleDateString() : "—"}
                     </p>
