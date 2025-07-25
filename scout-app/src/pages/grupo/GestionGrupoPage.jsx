@@ -110,7 +110,7 @@ const GestionGrupoPage = () => {
       },
     };
     try {
-      await axios.put(`/api/registrogestion/${gestion}/enviar-distrito/${usuarioId}`, {}, config);
+      await axios.post(`/api/registrogestion/enviar-distrito/${usuarioId}`, null, config);
       setUsuariosEnviados((prev) => [...prev, usuarioId]);
     } catch (error) {
       alert("Error al enviar al distrito: " + error.response?.data || error.message);
