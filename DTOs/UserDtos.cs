@@ -31,6 +31,7 @@ namespace BackendScout.Dtos
         public string Correo { get; set; }
         public string Ciudad { get; set; }
         public string Tipo { get; set; }
+        public string? GrupoScoutNombre { get; set; }
         public string Rama { get; set; }
         public string? UnidadNombre { get; set; }
 

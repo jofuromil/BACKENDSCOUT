@@ -46,5 +46,10 @@ namespace BackendScout.Services
                 .OrderByDescending(g => g.FechaInicio)
                 .ToListAsync();
         }
+        public async Task<Gestion?> ObtenerGestionPorNombreAsync(string nombre)
+        {
+            return await _context.Gestiones
+                .FirstOrDefaultAsync(g => g.Nombre == nombre);
+        }
     }
 }

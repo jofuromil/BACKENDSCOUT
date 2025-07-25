@@ -19,7 +19,6 @@ const GestionGrupoPage = () => {
 
   useEffect(() => {
     if (!token) return navigate("/login");
-
     const fetchData = async () => {
       try {
         const config = {
@@ -31,13 +30,16 @@ const GestionGrupoPage = () => {
         const [resDirigentes, resScouts, resRegistrados] = await Promise.all([
           axios.get(`/api/gruposcout/dirigentes`, config),
           axios.get(`/api/gruposcout/ver-scouts/${usuarioId}`, config),
-          axios.get(`/api/registrogestion/registrados/${gestion}`, config)
+          axios.get(`/api/registrogestion/registrados`, config)
         ]);
+        console.log("DIRIGENTES:", resDirigentes.data);
+        console.log("👉 REGISTRADOS:", resRegistrados.data);
 
         setDirigentes(resDirigentes.data);
         setScouts(resScouts.data);
+        console.log("🟠 SCOUTS:", resScouts.data.map(s => ({ nombre: s.nombreCompleto, id: s.id })));
 
-        const registrados = resRegistrados.data.map((r) => r.usuarioId);
+        const registrados = resRegistrados.data.map((r) => r.usuarioId?.toLowerCase());
         const enviados = resRegistrados.data
           .filter((r) => r.enviadoADistrito)
           .map((r) => r.usuarioId);
@@ -68,8 +70,18 @@ const GestionGrupoPage = () => {
     fetchData();
   }, [token, usuarioId, navigate]);
 
-  const estaRegistrado = (id) => usuariosRegistrados.includes(id);
+  const estaRegistrado = (id) => usuariosRegistrados.includes(id.toLowerCase());
   const estaEnviado = (id) => usuariosEnviados.includes(id);
+  const tieneDatosCompletos = (usuario) => {
+    return (
+      usuario.ci &&
+      usuario.fechaNacimiento &&
+      usuario.genero &&
+      usuario.rama &&
+      usuario.unidadNombre &&
+      usuario.grupoScoutNombre
+    );
+  };
 
   const toggleRegistro = async (usuarioId, registrado) => {
     const config = {
@@ -79,11 +91,11 @@ const GestionGrupoPage = () => {
     };
     try {
       if (registrado) {
-        await axios.delete(`/api/registrogestion/${gestion}/quitar/${usuarioId}`, config);
+        await axios.delete(`/api/registrogestion/quitar/${usuarioId}`, config);
         setUsuariosRegistrados((prev) => prev.filter((id) => id !== usuarioId));
         setUsuariosEnviados((prev) => prev.filter((id) => id !== usuarioId));
       } else {
-        await axios.post(`/api/registrogestion/${gestion}/registrar/${usuarioId}`, {}, config);
+        await axios.post(`/api/registrogestion/registrar/${usuarioId}`, {}, config);
         setUsuariosRegistrados((prev) => [...prev, usuarioId]);
       }
     } catch (error) {
@@ -117,12 +129,23 @@ const GestionGrupoPage = () => {
     <>
       <td className="border px-2 py-1">{estaRegistrado(u.id) ? "Sí" : "No"}</td>
       <td className="border px-2 py-1">
-        <button
-          className="text-blue-600 underline mr-2"
-          onClick={() => toggleRegistro(u.id, estaRegistrado(u.id))}
-        >
-          {estaRegistrado(u.id) ? "Quitar" : "Registrar"}
-        </button>
+        {estaRegistrado(u.id) ? (
+          <button
+            className="text-blue-600 underline mr-2"
+            onClick={() => toggleRegistro(u.id, true)}
+          >
+            Quitar
+          </button>
+        ) : tieneDatosCompletos(u) ? (
+          <button
+            className="text-blue-600 underline mr-2"
+            onClick={() => toggleRegistro(u.id, false)}
+          >
+            Registrar
+          </button>
+        ) : (
+          <span className="text-gray-400 cursor-not-allowed">Registrar</span>
+        )}
       </td>
       <td className="border px-2 py-1">
         {estaRegistrado(u.id) && !estaEnviado(u.id) ? (
@@ -172,8 +195,8 @@ const GestionGrupoPage = () => {
                     <td className="border px-2 py-1">{d.ci || "-"}</td>
                     <td className="border px-2 py-1">{d.nombreCompleto}</td>
                     <td className="border px-2 py-1">{d.fechaNacimiento?.split("T")[0]}</td>
-                    <td className="border px-2 py-1">{d.genero}</td>
-                    <td className="border px-2 py-1">{d.gruposcoutNombre}</td>
+                    <td className="border px-2 py-1">{d.genero || "-"}</td>
+                    <td className="border px-2 py-1">{d.grupoScoutNombre || "-"}</td>
                     <td className="border px-2 py-1">{d.rama}</td>
                     <td className="border px-2 py-1">{d.unidadNombre}</td>
                     <td className="border px-2 py-1">{d.profesion || "-"}</td>
@@ -199,6 +222,7 @@ const GestionGrupoPage = () => {
                   <th className="border px-2 py-1">Nombre</th>
                   <th className="border px-2 py-1">Fecha Nac.</th>
                   <th className="border px-2 py-1">Género</th>
+                  <th className="border px-2 py-1">Grupo Scout</th>
                   <th className="border px-2 py-1">Rama</th>
                   <th className="border px-2 py-1">Unidad</th>
                   <th className="border px-2 py-1">Colegio</th>
@@ -213,6 +237,7 @@ const GestionGrupoPage = () => {
                     <td className="border px-2 py-1">{s.nombreCompleto}</td>
                     <td className="border px-2 py-1">{s.fechaNacimiento?.split("T")[0]}</td>
                     <td className="border px-2 py-1">{s.genero}</td>
+                    <td className="border px-2 py-1">{s.grupoScoutNombre || "-"}</td>
                     <td className="border px-2 py-1">{s.rama}</td>
                     <td className="border px-2 py-1">{s.unidadNombre}</td>
                     <td className="border px-2 py-1">{s.institucionEducativa || "-"}</td>

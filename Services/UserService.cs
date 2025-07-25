@@ -278,7 +278,7 @@ namespace BackendScout.Services
                     Ciudad = u.Ciudad,
                     Tipo = u.Tipo,
                     Rama = u.Rama,
-                    UnidadNombre = u.Unidad.Nombre,
+                    UnidadNombre = u.Unidad != null ? u.Unidad.Nombre : "-",
                     Direccion = u.Direccion,
                     InstitucionEducativa = u.InstitucionEducativa,
                     NivelEstudios = u.NivelEstudios,
@@ -286,9 +286,12 @@ namespace BackendScout.Services
                     Profesion = u.Profesion,
                     Ocupacion = u.Ocupacion,
 
-                    // ✅ Campo nuevo: admin de grupo
                     EsAdminGrupo = u.GrupoScoutUsuarios
-                        .Any(g => g.GrupoScoutId == grupoScoutId && g.EsAdminGrupo)
+                        .Any(g => g.GrupoScoutId == grupoScoutId && g.EsAdminGrupo),
+
+                    GrupoScoutNombre = u.Unidad != null && u.Unidad.GrupoScout != null
+                        ? u.Unidad.GrupoScout.Nombre
+                        : "-"
                 })
                 .ToListAsync();
 
@@ -309,6 +312,7 @@ namespace BackendScout.Services
 
             var scouts = await _context.Users
                 .Include(u => u.Unidad)
+                    .ThenInclude(u => u.GrupoScout) // ✅ Necesario para acceder al nombre del grupo
                 .Where(u => u.Tipo == "Scout" && u.Unidad != null && u.Unidad.GrupoScoutId == grupoId)
                 .Select(u => new UserDto
                 {
@@ -327,13 +331,17 @@ namespace BackendScout.Services
                     NivelEstudios = u.NivelEstudios,
                     Genero = u.Genero,
                     Profesion = u.Profesion,
-                    Ocupacion = u.Ocupacion
+                    Ocupacion = u.Ocupacion,
+
+                    // ✅ Nuevo campo para mostrar el nombre del grupo scout
+                    GrupoScoutNombre = u.Unidad != null && u.Unidad.GrupoScout != null
+                        ? u.Unidad.GrupoScout.Nombre
+                        : "-"
                 })
                 .ToListAsync();
 
             return scouts;
         }
-
         public async Task<User?> ObtenerUsuarioPorIdAsync(Guid id)
             {
                 return await _context.Users

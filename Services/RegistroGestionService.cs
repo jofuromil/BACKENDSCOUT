@@ -25,6 +25,24 @@ namespace BackendScout.Services
         }
         public async Task RegistrarUsuarioEnGestionAsync(Guid usuarioId, Guid gestionId)
         {
+            var usuario = await _context.Users
+                .Include(u => u.Unidad)
+                .ThenInclude(u => u.GrupoScout)
+                .FirstOrDefaultAsync(u => u.Id == usuarioId);
+
+            if (usuario == null)
+                throw new Exception("Usuario no encontrado.");
+
+            // ✅ Validación de datos mínimos obligatorios
+            if (string.IsNullOrWhiteSpace(usuario.CI) ||
+                usuario.FechaNacimiento == default ||
+                string.IsNullOrWhiteSpace(usuario.Rama) ||
+                usuario.Unidad == null ||
+                usuario.Unidad.GrupoScout == null)
+            {
+                throw new Exception("El usuario no tiene todos los datos obligatorios completos para registrarlo.");
+            }
+
             var registro = await _context.RegistrosGestion
                 .FirstOrDefaultAsync(r => r.UsuarioId == usuarioId && r.GestionId == gestionId);
 
@@ -96,11 +114,12 @@ namespace BackendScout.Services
 
             await _context.SaveChangesAsync();
         }
-        public async Task<List<User>> ObtenerUsuariosRegistradosPorGestion(int grupoId, int gestion)
+        public async Task<List<User>> ObtenerUsuariosRegistradosPorGestion(int grupoId, Guid gestionId)
         {
             return await _context.RegistrosGestion
                 .Where(rg => rg.Usuario.GrupoScoutUsuarios.Any(g => g.GrupoScoutId == grupoId)
-                        && rg.Gestion.Nombre == gestion.ToString())
+                        && rg.GestionId == gestionId
+                        && rg.AprobadoGrupo)
                 .Select(rg => rg.Usuario)
                 .Distinct()
                 .Include(u => u.Unidad)
@@ -184,6 +203,15 @@ namespace BackendScout.Services
 
             return resumen;
         }
-
+        public async Task<List<(Guid UsuarioId, bool EnviadoADistrito)>> ObtenerUsuariosRegistradosActivosAsync(int grupoId, Guid gestionId)
+        {
+            return await _context.RegistrosGestion
+                .Where(r => r.GestionId == gestionId &&
+                            r.AprobadoGrupo &&
+                            r.Usuario.Unidad != null &&
+                            r.Usuario.Unidad.GrupoScoutId == grupoId)
+                .Select(r => new ValueTuple<Guid, bool>(r.UsuarioId, r.EnviadoADistrito))
+                .ToListAsync();
+        }
     }
 }

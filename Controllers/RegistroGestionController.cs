@@ -114,7 +114,7 @@ namespace BackendScout.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
-        
+
 
         [HttpGet("registrados")]
         public async Task<IActionResult> ObtenerSoloRegistrados()
@@ -130,28 +130,24 @@ namespace BackendScout.Controllers
             if (gestion == null)
                 return NotFound("No hay gestión activa.");
 
-            var usuarios = await _registroService.ObtenerUsuariosRegistradosAsync(grupoId.Value, gestion.Id);
+            var registros = await _registroService.ObtenerUsuariosRegistradosActivosAsync(grupoId.Value, gestion.Id);
 
-            var resultado = usuarios.Select(u => new
+            var resultado = registros.Select(r => new
             {
-                u.Id,
-                u.NombreCompleto,
-                u.CI,
-                u.FechaNacimiento,
-                u.Genero,
-                u.Rama,
-                Unidad = u.Unidad?.Nombre,
-                Colegio = u.InstitucionEducativa,
-                Curso = u.NivelEstudios,
-                Profesion = u.Profesion,
-                Ocupacion = u.Ocupacion
+                usuarioId = r.UsuarioId,
+                enviadoADistrito = r.EnviadoADistrito
             });
 
             return Ok(resultado);
         }
+
         [HttpGet("registrados/{gestion}")]
-        public async Task<IActionResult> ObtenerUsuariosRegistradosPorGestion(int gestion)
+        public async Task<IActionResult> ObtenerUsuariosRegistradosPorGestion(string gestion)
         {
+            var gestionActiva = await _gestionService.ObtenerGestionPorNombreAsync(gestion);
+            if (gestionActiva == null)
+                return NotFound("No se encontró la gestión.");
+
             var userId = new Guid(User.FindFirstValue(ClaimTypes.NameIdentifier));
             var dirigente = await _userService.ObtenerUsuarioPorIdAsync(userId);
             var grupoId = dirigente?.GrupoScoutUsuarios?.FirstOrDefault()?.GrupoScoutId;
@@ -159,7 +155,7 @@ namespace BackendScout.Controllers
             if (grupoId == null || grupoId == 0)
                 return BadRequest("No pertenece a ningún grupo scout.");
 
-            var usuarios = await _registroService.ObtenerUsuariosRegistradosPorGestion(grupoId.Value, gestion);
+            var usuarios = await _registroService.ObtenerUsuariosRegistradosPorGestion(grupoId.Value, gestionActiva.Id);
 
             var resultado = usuarios.Select(u => new
             {
@@ -178,5 +174,6 @@ namespace BackendScout.Controllers
 
             return Ok(resultado);
         }
+
     }
 }
