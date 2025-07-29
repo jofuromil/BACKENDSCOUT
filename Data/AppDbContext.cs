@@ -29,11 +29,14 @@ namespace BackendScout.Data
         public DbSet<MensajeEvento> MensajesEvento { get; set; }
         public DbSet<MensajeEventoDestinatario> MensajesEventoDestinatarios { get; set; }
         public DbSet<PasswordResetCode> PasswordResetCodes { get; set; }
+        public DbSet<MensajeGrupo> MensajesGrupo { get; set; }
         public DbSet<Gestion> Gestiones { get; set; }
         public DbSet<RegistroGestion> RegistrosGestion { get; set; }
 
         // ✅ DbSet corregido
         public DbSet<NivelDistrito> NivelesDistrito { get; set; }
+        public DbSet<DistritoUsuario> DistritoUsuarios { get; set; }
+
 
         public void LimpiarRequisitosInvalidos()
         {
@@ -86,7 +89,7 @@ namespace BackendScout.Data
                 .WithMany(d => d.Unidades)
                 .HasForeignKey(u => u.NivelDistritoId)
                 .OnDelete(DeleteBehavior.Restrict);
-            
+
             // Relación DirigenteValidador ↔ ObjetivoSeleccionado
             modelBuilder.Entity<ObjetivoSeleccionado>()
                 .HasOne(o => o.DirigenteValidador)
@@ -100,6 +103,20 @@ namespace BackendScout.Data
                 .WithMany()
                 .HasForeignKey(r => r.DirigenteValidadorId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Relación DistritoUsuario ↔ Usuario y NivelDistrito
+            modelBuilder.Entity<DistritoUsuario>()
+                .HasOne(du => du.Usuario)
+                .WithMany(u => u.DistritoUsuarios)
+                .HasForeignKey(du => du.UsuarioId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<DistritoUsuario>()
+                .HasOne(du => du.NivelDistrito)
+                .WithMany()
+                .HasForeignKey(du => du.NivelDistritoId)
+                .OnDelete(DeleteBehavior.Cascade);
+    
 
         }
     }

@@ -11,6 +11,8 @@ function PanelDirigente() {
   const [grupoScout, setGrupoScout] = useState("");
   const [esAdminGrupoScout, setEsAdminGrupoScout] = useState(false);
   const [unidadInfoVisible, setUnidadInfoVisible] = useState(false);
+  const [tieneRolDistrito, setTieneRolDistrito] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,6 +41,15 @@ function PanelDirigente() {
           setUnidadInfoVisible(true);
           localStorage.setItem("unidadId", user.unidad.id);
           localStorage.setItem("codigoUnidad", user.unidad.codigoUnidad);
+        }
+
+        // Verificar si tiene rol en el distrito
+        const rolesDistrito = localStorage.getItem("rolesDistrito");
+        if (rolesDistrito) {
+          const roles = JSON.parse(rolesDistrito);
+          if (roles.length > 0) {
+            setTieneRolDistrito(true);
+          }
         }
       })
       .catch(() => {
@@ -71,17 +82,6 @@ function PanelDirigente() {
             <p><strong>Grupo Scout:</strong> {grupoScout}</p>
             <p><strong>Rama:</strong> {ramaUnidad}</p>
             <p><strong>Código de la unidad:</strong> {codigoUnidad}</p>
-          </div>
-        )}
-
-        {esAdminGrupoScout && (
-          <div className="mb-6">
-            <button
-              onClick={irAGrupoScout}
-              className="border-2 border-blue-600 text-blue-700 px-4 py-2 rounded-full w-full mb-2"
-            >
-              Ir al Grupo Scout
-            </button>
           </div>
         )}
 
@@ -138,11 +138,41 @@ function PanelDirigente() {
           </button>
           <button
             onClick={() => navigate("/ver-mensajes-unidad")}
-            className="border-2 border-purple-600 text-purple-700 px-4 py-2 rounded-full w-full"
+            className="border-2 border-purple-600 text-purple-700 px-4 py-2 rounded-full w-full mb-2"
           >
             Ver Mensajes de la Unidad
           </button>
+          <button
+            onClick={() => navigate("/scout/ver-mensajesA")}
+            className="border-2 border-blue-600 text-blue-700 px-4 py-2 rounded-full w-full"
+          >
+            Ver Mensajes del Grupo
+          </button>
         </div>
+
+        {(esAdminGrupoScout || tieneRolDistrito) && (
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold mb-2">Niveles Superiores</h2>
+
+            {esAdminGrupoScout && (
+              <button
+                onClick={irAGrupoScout}
+                className="border-2 border-blue-600 text-blue-700 px-4 py-2 rounded-full w-full mb-2"
+              >
+                Ir al Grupo Scout
+              </button>
+            )}
+
+            {tieneRolDistrito && (
+              <button
+                onClick={() => navigate("/distrito")}
+                className="border-2 border-indigo-600 text-indigo-700 px-4 py-2 rounded-full w-full"
+              >
+                Ir al Panel de Distrito
+              </button>
+            )}
+          </div>
+        )}
 
         <div>
           <h2 className="text-xl font-semibold mb-2">Cuenta</h2>

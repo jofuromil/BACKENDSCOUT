@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import MenuFijo from "../../components/MenuFijoGrupo";
@@ -10,65 +10,83 @@ const GestionGrupoPage = () => {
   const [agrupadosScouts, setAgrupadosScouts] = useState({});
   const [usuariosRegistrados, setUsuariosRegistrados] = useState([]);
   const [usuariosEnviados, setUsuariosEnviados] = useState([]);
+  const [grupo, setGrupo] = useState(null);
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const usuarioId = localStorage.getItem("usuarioId");
 
+  const normalizar = (texto) =>
+  texto?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, "");
+
   const gestion = "2025";
 
-  useEffect(() => {
-    if (!token) return navigate("/login");
-    const fetchData = async () => {
-      try {
-        const config = {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        };
+useEffect(() => {
+  if (!token) return navigate("/login");
 
-        const [resDirigentes, resScouts, resRegistrados] = await Promise.all([
-          axios.get(`/api/gruposcout/dirigentes`, config),
-          axios.get(`/api/gruposcout/ver-scouts/${usuarioId}`, config),
-          axios.get(`/api/registrogestion/registrados`, config)
-        ]);
-        console.log("DIRIGENTES:", resDirigentes.data);
-        console.log("👉 REGISTRADOS:", resRegistrados.data);
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
 
-        setDirigentes(resDirigentes.data);
-        setScouts(resScouts.data);
-        console.log("🟠 SCOUTS:", resScouts.data.map(s => ({ nombre: s.nombreCompleto, id: s.id })));
+  const grupoId = localStorage.getItem("grupoId");
 
-        const registrados = resRegistrados.data.map((r) => r.usuarioId?.toLowerCase());
-        const enviados = resRegistrados.data
-          .filter((r) => r.enviadoADistrito)
-          .map((r) => r.usuarioId);
+  const fetchGrupo = async () => {
+    try {
+      const res = await axios.get(`http://localhost:8080/api/gruposcout/${grupoId}`, config);
+      setGrupo(res.data);
+    } catch (error) {
+      console.error("Error al obtener el grupo:", error);
+    }
+  };
 
-        setUsuariosRegistrados(registrados);
-        setUsuariosEnviados(enviados);
+  const fetchData = async () => {
+    try {
+      const [resDirigentes, resScouts, resRegistrados] = await Promise.all([
+        axios.get(`/api/gruposcout/dirigentes`, config),
+        axios.get(`/api/gruposcout/ver-scouts/${usuarioId}`, config),
+        axios.get(`/api/registrogestion/registrados`, config)
+      ]);
 
-        const dPorUnidad = {};
-        resDirigentes.data.forEach((d) => {
-          const unidad = d.unidadNombre || "Sin unidad";
-          if (!dPorUnidad[unidad]) dPorUnidad[unidad] = [];
-          dPorUnidad[unidad].push(d);
-        });
-        setAgrupadosDirigentes(dPorUnidad);
+      console.log("DIRIGENTES:", resDirigentes.data);
+      console.log("👉 REGISTRADOS:", resRegistrados.data);
 
-        const sPorUnidad = {};
-        resScouts.data.forEach((s) => {
-          const unidad = s.unidadNombre || "Sin unidad";
-          if (!sPorUnidad[unidad]) sPorUnidad[unidad] = [];
-          sPorUnidad[unidad].push(s);
-        });
-        setAgrupadosScouts(sPorUnidad);
-      } catch (error) {
-        console.error("Error al cargar miembros del grupo:", error);
-      }
-    };
+      setDirigentes(resDirigentes.data);
+      setScouts(resScouts.data);
+      console.log("🟠 SCOUTS:", resScouts.data.map(s => ({ nombre: s.nombreCompleto, id: s.id })));
 
-    fetchData();
-  }, [token, usuarioId, navigate]);
+      const registrados = resRegistrados.data.map((r) => r.usuarioId?.toLowerCase());
+      const enviados = resRegistrados.data
+        .filter((r) => r.enviadoADistrito)
+        .map((r) => r.usuarioId);
+
+      setUsuariosRegistrados(registrados);
+      setUsuariosEnviados(enviados);
+
+      const dPorUnidad = {};
+      resDirigentes.data.forEach((d) => {
+        const unidad = d.unidadNombre || "Sin unidad";
+        if (!dPorUnidad[unidad]) dPorUnidad[unidad] = [];
+        dPorUnidad[unidad].push(d);
+      });
+      setAgrupadosDirigentes(dPorUnidad);
+
+      const sPorUnidad = {};
+      resScouts.data.forEach((s) => {
+        const unidad = s.unidadNombre || "Sin unidad";
+        if (!sPorUnidad[unidad]) sPorUnidad[unidad] = [];
+        sPorUnidad[unidad].push(s);
+      });
+      setAgrupadosScouts(sPorUnidad);
+    } catch (error) {
+      console.error("Error al cargar miembros del grupo:", error);
+    }
+  };
+
+  fetchGrupo();
+  fetchData();
+}, [token, usuarioId, navigate]);
 
   const estaRegistrado = (id) => usuariosRegistrados.includes(id.toLowerCase());
   const estaEnviado = (id) => usuariosEnviados.includes(id);
@@ -119,23 +137,33 @@ const GestionGrupoPage = () => {
 
   const renderTabla = (usuarios) => (
     <>
-      <th className="border px-2 py-1">Registrado</th>
-      <th className="border px-2 py-1">Acción</th>
-      <th className="border px-2 py-1">Enviado</th>
+      <th className="border px-2 py-1">Registro Grupo</th>
+      <th className="border px-2 py-1">Registrar al Grupo</th>
+      <th className="border px-2 py-1">Registro al Distrito</th>
     </>
   );
 
-  const renderFila = (u) => (
+const renderFila = (u) => {
+  const registrado = estaRegistrado(u.id);
+  const enviado = estaEnviado(u.id);
+  const aprobado = registrado && tieneDatosCompletos(u);
+
+  return (
     <>
-      <td className="border px-2 py-1">{estaRegistrado(u.id) ? "Sí" : "No"}</td>
+      <td className="border px-2 py-1">{registrado ? "Sí" : "No"}</td>
+
       <td className="border px-2 py-1">
-        {estaRegistrado(u.id) ? (
-          <button
-            className="text-blue-600 underline mr-2"
-            onClick={() => toggleRegistro(u.id, true)}
-          >
-            Quitar
-          </button>
+        {registrado ? (
+          enviado ? (
+            <span className="text-gray-400 cursor-not-allowed">Quitar</span>
+          ) : (
+            <button
+              className="text-blue-600 underline mr-2"
+              onClick={() => toggleRegistro(u.id, true)}
+            >
+              Quitar
+            </button>
+          )
         ) : tieneDatosCompletos(u) ? (
           <button
             className="text-blue-600 underline mr-2"
@@ -147,27 +175,55 @@ const GestionGrupoPage = () => {
           <span className="text-gray-400 cursor-not-allowed">Registrar</span>
         )}
       </td>
+
       <td className="border px-2 py-1">
-        {estaRegistrado(u.id) && !estaEnviado(u.id) ? (
+        {!registrado ? (
+          "enviar"
+        ) : enviado ? (
+          <span className="text-purple-600 font-semibold">Enviado</span>
+        ) : aprobado ? (
           <button
             className="text-green-600 underline"
             onClick={() => enviarADistrito(u.id)}
           >
             Enviar
           </button>
-        ) : estaEnviado(u.id) ? (
-          "✓"
         ) : (
-          "-"
+          <span className="text-gray-400 cursor-not-allowed">Enviar</span>
         )}
       </td>
     </>
   );
+};
 
   return (
     <div className="p-4 mt-20">
       <MenuFijo />
-      <h2 className="text-2xl font-bold mb-6">Gestión del Grupo Scout</h2>
+
+      {grupo && (
+  <div className="flex flex-col items-center justify-center gap-2 mb-6">
+    {grupo.distrito && grupo.nombre && (
+      <img
+        src={`/img/grupos/${normalizar(grupo.distrito)}/${normalizar(grupo.nombre)}.png`}
+        alt="Logo grupo"
+        className="w-20 h-20 object-contain"
+      />
+    )}
+    <h1 className="text-3xl font-bold text-center">
+      Grupo Scout {grupo.nombre}
+    </h1>
+  </div>
+)}
+
+      <h2 className="text-xl font-semibold text-center mb-2">
+        Gestión del Grupo Scout
+      </h2>
+      <p className="text-sm text-center text-gray-600 mb-1">
+        Para registrar un miembro en la gestión actual, debe tener completos los datos de su perfil.
+      </p>
+      <p className="text-sm text-center text-gray-600 mb-6">
+        Los registros enviados al distrito ya no podrán ser retirados.
+      </p>
 
       <h3 className="text-xl font-semibold mt-8 mb-2">Dirigentes por Unidad</h3>
       {Object.keys(agrupadosDirigentes).map((unidad) => (

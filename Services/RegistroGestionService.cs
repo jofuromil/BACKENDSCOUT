@@ -2,6 +2,7 @@ using BackendScout.Data;
 using BackendScout.Models;
 using Microsoft.EntityFrameworkCore;
 using BackendScout.DTOs;
+using BackendScout.Dtos;
 
 namespace BackendScout.Services
 {
@@ -212,6 +213,108 @@ namespace BackendScout.Services
                             r.Usuario.Unidad.GrupoScoutId == grupoId)
                 .Select(r => new ValueTuple<Guid, bool>(r.UsuarioId, r.EnviadoADistrito))
                 .ToListAsync();
+        }
+        public async Task<List<RegistroResumenGrupoDto>> ObtenerResumenPorDistrito(int distritoId)
+        {
+            var registros = await _context.RegistrosGestion
+                .Include(r => r.Unidad)
+                .ThenInclude(u => u.GrupoScout)
+                .Where(r =>
+                    r.EnviadoADistrito &&
+                    r.Unidad.GrupoScout != null &&
+                    r.Unidad.GrupoScout.NivelDistritoId == distritoId)
+                .ToListAsync();
+
+            var resumen = registros
+                .GroupBy(r => new
+                {
+                    r.Unidad.GrupoScoutId,
+                    r.Unidad.GrupoScout.Nombre
+                })
+                .Select(g => new RegistroResumenGrupoDto
+                {
+                    GrupoId = g.Key.GrupoScoutId,
+                    NombreGrupo = g.Key.Nombre,
+                    Enviados = g.Count(),
+                    Aprobados = g.Count(r => r.AprobadoDistrito)
+                })
+                .ToList();
+
+            return resumen;
+        }
+        public async Task<List<RegistroResumenGrupoDto>> ObtenerResumenPorDistritoPorUsuarioAsync(Guid usuarioId)
+        {
+            var usuario = await _context.Users
+                .Include(u => u.GrupoScoutUsuarios)
+                    .ThenInclude(gsu => gsu.GrupoScout)
+                .FirstOrDefaultAsync(u => u.Id == usuarioId);
+
+            if (usuario == null)
+                throw new Exception("Usuario no encontrado");
+
+            var distritoId = usuario.GrupoScoutUsuarios
+                .FirstOrDefault()?.GrupoScout?.NivelDistritoId;
+
+            if (distritoId == null)
+                throw new Exception("El usuario no está asociado a un grupo con distrito válido");
+
+            var registros = await _context.RegistrosGestion
+                .Include(r => r.Unidad)
+                    .ThenInclude(u => u.GrupoScout)
+                .Where(r =>
+                    r.EnviadoADistrito &&
+                    r.Unidad.GrupoScout != null &&
+                    r.Unidad.GrupoScout.NivelDistritoId == distritoId)
+                .ToListAsync();
+
+            var resumen = registros
+                .GroupBy(r => new
+                {
+                    r.Unidad.GrupoScoutId,
+                    r.Unidad.GrupoScout.Nombre
+                })
+                .Select(g => new RegistroResumenGrupoDto
+                {
+                    GrupoId = g.Key.GrupoScoutId,
+                    NombreGrupo = g.Key.Nombre,
+                    Enviados = g.Count(),
+                    Aprobados = g.Count(r => r.AprobadoDistrito)
+                })
+                .ToList();
+
+            return resumen;
+        }
+        // CORREGIDO: Usar Guid en lugar de int
+public async Task<List<RegistroGestion>> ObtenerRegistrosPorGrupoAsync(int grupoId, Guid gestionId)
+{
+    return await _context.RegistrosGestion
+        .Include(r => r.Usuario)
+        .Include(r => r.Unidad)
+        .ThenInclude(u => u.GrupoScout)
+        
+        .Where(r =>
+            r.Unidad != null &&
+            r.Unidad.GrupoScoutId == grupoId &&
+            r.GestionId == gestionId && // Guid == Guid
+            r.EnviadoADistrito)
+        .ToListAsync();
+}
+
+        public async Task AprobarRegistroDesdeDistritoAsync(Guid usuarioId, Guid gestionId)
+        {
+            var registro = await _context.RegistrosGestion
+                .FirstOrDefaultAsync(r =>
+                    r.UsuarioId == usuarioId &&
+                    r.GestionId == gestionId &&
+                    r.EnviadoADistrito);
+
+            if (registro == null)
+                throw new Exception("El registro no fue encontrado o no fue enviado por el grupo.");
+
+            registro.AprobadoDistrito = true;
+            registro.FechaAprobadoDistrito = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
         }
     }
 }

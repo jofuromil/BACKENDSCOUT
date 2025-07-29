@@ -40,3 +40,14 @@
 .read-the-docs {
   color: #888;
 }
+@media print {
+  .pdf-header {
+    background-color: #d8b4fe !important; /* violeta claro */
+    color: #000 !important;
+  }
+  .pdf-total {
+    background-color: #c084fc !important; /* violeta medio */
+    color: #000 !important;
+  }
+}
+

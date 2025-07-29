@@ -37,8 +37,13 @@ import CrearEventoGrupo from "./pages/grupo/CrearEventoGrupo";
 import ListaEventosGrupo from "./pages/grupo/ListaEventosGrupo";
 import EnviarMensajesGrupo from "./pages/grupo/EnviarMensajesGrupo";
 import VerMensajesGrupo from "./pages/grupo/VerMensajesGrupo";
+import VerMensajesGrupoA from "./pages/scout/VerMensajesGrupoA";
 import VerPerfilScoutDirigente from "./pages/dirigente/VerPerfilScoutDirigente";
 import GestionGrupoPage from './pages/grupo/GestionGrupoPage';
+import EnviarMensajeGrupo from "./pages/grupo/EnviarMensajeGrupo";
+import PanelDistrito from "./pages/distrito/PanelDistrito";
+import RegistrosDistrito from "./pages/distrito/RegistrosDistrito";
+import RegistrosGrupoDistrito from "./pages/distrito/RegistrosGrupoDistrito";
 
 function App() {
   return (
@@ -84,8 +89,13 @@ function App() {
         <Route path="/grupo/eventos/nuevo" element={<CrearEventoGrupo />} />
         <Route path="/grupo/eventos" element={<ListaEventosGrupo />} />
         <Route path="/grupo/mensajes" element={<EnviarMensajesGrupo />} />
-        <Route path="/grupo/mensajes/ver" element={<VerMensajesGrupo />} />
+        <Route path="/grupo/ver-mensajes" element={<VerMensajesGrupo />} />
+        <Route path="/scout/ver-mensajesA" element={<VerMensajesGrupoA />} />
         <Route path="/grupo/gestion" element={<GestionGrupoPage />} />
+        <Route path="/grupo/enviar-mensaje" element={<EnviarMensajeGrupo />} />
+        <Route path="/distrito" element={<PanelDistrito />} />
+        <Route path="/distrito/registros" element={<RegistrosDistrito />} />
+        <Route path="/distrito/registros/:grupoId" element={<RegistrosGrupoDistrito />} />
       </Routes>
     </Router>
   );

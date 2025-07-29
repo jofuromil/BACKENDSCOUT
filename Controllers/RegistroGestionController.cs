@@ -13,6 +13,7 @@ namespace BackendScout.Controllers
         private readonly RegistroGestionService _registroService;
         private readonly UserService _userService;
         private readonly GestionService _gestionService;
+        private readonly RegistroGestionService _registroGestionService;
 
         public RegistroGestionController(
             RegistroGestionService registroService,
@@ -173,6 +174,65 @@ namespace BackendScout.Controllers
             });
 
             return Ok(resultado);
+        }
+        [HttpGet("resumen-distrito/{distritoId}")]
+        public async Task<IActionResult> ObtenerResumenPorDistrito(int distritoId)
+        {
+            var resumen = await _registroService.ObtenerResumenPorDistrito(distritoId);
+            return Ok(resumen);
+        }
+        [HttpGet("resumen-distrito-por-usuario/{usuarioId}")]
+        public async Task<IActionResult> ObtenerResumenPorDistritoPorUsuario(Guid usuarioId)
+        {
+            try
+            {
+                var resumen = await _registroGestionService.ObtenerResumenPorDistritoPorUsuarioAsync(usuarioId);
+                return Ok(resumen);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = ex.Message });
+            }
+        }
+        [HttpGet("registros-por-grupo/{grupoId}")]
+        public async Task<IActionResult> ObtenerRegistrosPorGrupo(int grupoId)
+        {
+            var gestion = await _gestionService.ObtenerGestionActivaAsync();
+            if (gestion == null)
+                return NotFound("No hay gestión activa.");
+
+            var registros = await _registroService.ObtenerRegistrosPorGrupoAsync(grupoId, gestion.Id);
+
+            var resultado = registros.Select(r => new
+            {
+                usuarioId = r.UsuarioId,
+                nombreCompleto = r.Usuario.NombreCompleto,
+                ci = r.Usuario.CI,
+                rama = r.Usuario.Rama,
+                tipo = r.Usuario.Tipo,
+                unidadNombre = r.Usuario.Unidad?.Nombre ?? "",
+                grupoNombre = r.Usuario.GrupoScoutUsuarios?.FirstOrDefault()?.GrupoScout?.Nombre ?? "",
+                aprobadoDistrito = r.AprobadoDistrito
+            });
+
+            return Ok(resultado);
+        }
+        [HttpPost("aprobar-distrito")]
+        public async Task<IActionResult> AprobarRegistroDesdeDistrito([FromBody] Guid usuarioId)
+        {
+            var gestion = await _gestionService.ObtenerGestionActivaAsync();
+            if (gestion == null)
+                return NotFound("No hay gestión activa.");
+
+            try
+            {
+                await _registroService.AprobarRegistroDesdeDistritoAsync(usuarioId, gestion.Id);
+                return Ok(new { mensaje = "Registro aprobado desde distrito." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
 
     }

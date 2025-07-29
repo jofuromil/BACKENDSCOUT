@@ -29,7 +29,7 @@ function Inicio() {
       localStorage.setItem("rama", data.user.rama || "");
       localStorage.setItem("unidadId", data.user.unidadId || "");
 
-      // ✅ Nuevo: llamar a /me para obtener la unidad completa
+      // ✅ Obtener datos completos con /me
       const meResponse = await axios.get("http://localhost:8080/api/users/me", {
         headers: {
           Authorization: `Bearer ${data.token}`,
@@ -46,12 +46,44 @@ function Inicio() {
         localStorage.setItem("distrito", usuario.unidad.distrito);
       }
 
-      if (!data.user.unidadId) {
-        navigate("/unidad");
-      } else if (data.user.tipo.toLowerCase() === "dirigente") {
-        navigate("/panel-dirigente");
-      } else {
+      const tipo = data.user.tipo.toLowerCase();
+      const unidadId = data.user.unidadId;
+      const usuarioId = data.user.id;
+
+      // ✅ Consultar roles en distrito (siempre para dirigentes)
+      if (tipo === "dirigente") {
+        try {
+          const distritoRes = await axios.get(
+            `http://localhost:8080/api/DistritoUsuario/distritos/${usuarioId}`,
+            {
+              headers: { Authorization: `Bearer ${data.token}` },
+            }
+          );
+
+          if (distritoRes.data.length > 0) {
+            localStorage.setItem("rolesDistrito", JSON.stringify(distritoRes.data));
+          }
+        } catch (error) {
+          console.warn("No se pudieron cargar roles de distrito.");
+        }
+      }
+
+      // 🔁 Redirección según tipo y unidad
+      if (tipo === "scout") {
         navigate("/panel-scout");
+      } else if (tipo === "dirigente") {
+        if (unidadId) {
+          navigate("/panel-dirigente");
+        } else {
+          const rolesDistrito = localStorage.getItem("rolesDistrito");
+          if (rolesDistrito && JSON.parse(rolesDistrito).length > 0) {
+            navigate("/distrito");
+          } else {
+            navigate("/unidad");
+          }
+        }
+      } else {
+        navigate("/login"); // por seguridad
       }
     } catch (err) {
       const msg = err.response?.data?.mensaje || "❌ Error de autenticación.";

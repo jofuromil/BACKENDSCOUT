@@ -41,5 +41,10 @@ namespace BackendScout.Models
         public string? UnidadNombre { get; set; }
         public string? GrupoNombre { get; set; }
         public string? DistritoNombre { get; set; }
+        public Guid UnidadId { get; set; }
+
+        [ForeignKey("UnidadId")]
+        public Unidad Unidad { get; set; }
+
     }
 }

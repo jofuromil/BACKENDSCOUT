@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using BackendScout.Data;
 using BackendScout.Models;
 using Microsoft.EntityFrameworkCore;
+using BackendScout.Dtos.Grupo;
 
 namespace BackendScout.Controllers
 {
@@ -147,6 +148,33 @@ namespace BackendScout.Controllers
                 grupo.Nombre,
                 Distrito = grupo.NivelDistrito?.Nombre
             });
+        }
+        [HttpGet("{grupoId}/resumen-registros")]
+        public async Task<IActionResult> VerResumenUnidades(int grupoId)
+        {
+            try
+            {
+                var resumen = await _grupoScoutService.ObtenerResumenDeRegistrosPorUnidadAsync(grupoId);
+                return Ok(resumen);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = "Error al obtener el resumen de registros.", error = ex.Message });
+            }
+        }
+        
+        [HttpGet("{grupoId}/resumen-enviados")]
+        public async Task<IActionResult> VerResumenenviados(int grupoId)
+        {
+            try
+            {
+                var resumen = await _grupoScoutService.ObtenerResumenDeenviadosPorUnidadAsync(grupoId);
+                return Ok(resumen);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { mensaje = "Error al obtener el resumen de registros.", error = ex.Message });
+            }
         }
     }
 }

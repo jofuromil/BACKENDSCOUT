@@ -105,9 +105,15 @@ function PanelScout() {
           <h2 className="text-xl font-semibold mb-2">Comunicaciones</h2>
           <button
             onClick={() => navigate("/mensajes-recibidos")}
-            className="border-2 border-purple-600 text-purple-700 px-4 py-2 rounded-full w-full"
+            className="border-2 border-purple-600 text-purple-700 px-4 py-2 rounded-full w-full mb-2"
           >
             Ver Mensajes de la Unidad
+          </button>
+          <button
+            onClick={() => navigate("/scout/ver-mensajesA")}
+            className="border-2 border-blue-600 text-blue-700 px-4 py-2 rounded-full w-full"
+          >
+            Ver Mensajes del Grupo
           </button>
         </div>
 

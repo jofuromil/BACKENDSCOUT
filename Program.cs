@@ -12,7 +12,6 @@ using System.Text.Json.Serialization;
 using System.Security.Claims;
 using Microsoft.Extensions.FileProviders;
 
-
 // ✅ Activar licencia QuestPDF
 QuestPDF.Settings.License = LicenseType.Community;
 
@@ -21,7 +20,7 @@ var builder = WebApplication.CreateBuilder(args);
 // ✅ Clave JWT desde appsettings.json o valor por defecto
 var jwtKey = builder.Configuration["Jwt:Key"] ?? "clave-secreta-super-segura-scout";
 
-// ✅ CORS para React
+// ✅ CORS para React (http://localhost:5173)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
@@ -49,7 +48,6 @@ builder.Services.AddSwaggerGen(c =>
         Version = "v1"
     });
 
-    // 🔐 Configuración del esquema de seguridad para JWT
     c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -95,6 +93,11 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<PasswordResetService>();
 builder.Services.AddScoped<RegistroGestionService>();
 builder.Services.AddScoped<GestionService>();
+builder.Services.AddScoped<MensajeGrupoService>();
+builder.Services.AddHostedService<MensajeLimpiezaService>();
+builder.Services.AddScoped<DistritoUsuarioService>();
+
+
 
 // ✅ Base de datos
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -130,28 +133,15 @@ using (var scope = app.Services.CreateScope())
     SeedData.Inicializar(context);
 }
 
-// 🔴 COMENTADO: para evitar error si no hay base de datos
-// using (var scope = app.Services.CreateScope())
-// {
-//     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-//     context.LimpiarRequisitosInvalidos(); // método temporal
-// }
-
-// 🔴 COMENTADO: migraciones automáticas y limpieza temporal de requisitos
-// using (var scope = app.Services.CreateScope())
-// {
-//     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-//     db.Database.Migrate(); // 👈 Esta línea es la que causaría el error si no hay BD
-//     await db.EliminarRequisitosCumplidosInvalidos();
-// }
-
+// ✅ Swagger
 app.UseSwagger();
 app.UseSwaggerUI();
 
+// ✅ Archivos estáticos normales
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
-// ✅ Exponer carpeta ArchivosMensajes
+// ✅ Archivos adjuntos expuestos (carpeta para mensajes del grupo)
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(
@@ -159,13 +149,15 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/archivos"
 });
 
-// ✅ CORS
+// ✅ CORS: debe ir ANTES de UseAuthentication y UseAuthorization
 app.UseCors("AllowReactApp");
 
 // ✅ Seguridad
 app.UseAuthentication();
 app.UseAuthorization();
 
+// ✅ Controladores
 app.MapControllers();
 
 app.Run();
+

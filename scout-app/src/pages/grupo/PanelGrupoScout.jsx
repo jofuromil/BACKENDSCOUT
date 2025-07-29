@@ -62,13 +62,10 @@ export default function PanelGrupoScout() {
             Ver Dirigentes del Grupo
           </button>
           <button onClick={() => navigate("/grupo/unidades")} className="border-2 border-violet-600 text-violet-700 px-4 py-2 rounded-full w-full mb-2">
-            Ver Unidades del Grupo
+            Ver resumen Unidades del Grupo
           </button>
           <button onClick={() => navigate("/grupo/gestion")} className="border-2 border-violet-600 text-violet-700 px-4 py-2 rounded-full w-full mb-2">
             Aprobar registros
-          </button>
-          <button onClick={() => navigate("/grupo/enviar-distrito")} className="border-2 border-violet-600 text-violet-700 px-4 py-2 rounded-full w-full">
-            Enviar registros al Distrito
           </button>
         </div>
 
@@ -84,14 +81,8 @@ export default function PanelGrupoScout() {
 
         <div className="mb-6">
           <h2 className="text-xl font-semibold mb-2">Mensajes del Grupo Scout</h2>
-          <button onClick={() => navigate("/grupo/mensajes-dirigentes")} className="border-2 border-violet-600 text-violet-700 px-4 py-2 rounded-full w-full mb-2">
-            Enviar mensaje a los Dirigentes
-          </button>
-          <button onClick={() => navigate("/grupo/mensajes-scouts")} className="border-2 border-violet-600 text-violet-700 px-4 py-2 rounded-full w-full mb-2">
-            Enviar mensaje a los Scouts
-          </button>
-          <button onClick={() => navigate("/grupo/mensajes-todos")} className="border-2 border-violet-600 text-violet-700 px-4 py-2 rounded-full w-full mb-2">
-            Enviar mensaje a todos los miembros
+          <button onClick={() => navigate("/grupo/enviar-mensaje")} className="border-2 border-violet-600 text-violet-700 px-4 py-2 rounded-full w-full mb-2">
+            Enviar mensaje al Grupo
           </button>
           <button onClick={() => navigate("/grupo/ver-mensajes")} className="border-2 border-violet-600 text-violet-700 px-4 py-2 rounded-full w-full">
             Ver mensajes del Grupo Scout

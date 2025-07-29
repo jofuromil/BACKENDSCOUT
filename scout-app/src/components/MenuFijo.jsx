@@ -31,7 +31,7 @@ export default function MenuFijo() {
     { icono: <Target />, texto: "Objetivos", ruta: "/dirigente/validar-objetivos" },
     { icono: <Mail />, texto: "Mensajes", ruta: "/Mensajes-Unidad" },
     { icono: <Star />, texto: "Especialidades", ruta: "/dirigente/especialidades" },
-    { icono: <User />, texto: "Yo", ruta: "/kardex" },
+    { icono: <User />, texto: "Yo", ruta: "/perfil" },
   ];
 
   const botones = tipo === "dirigente" ? botonesDirigente : botonesScout;
