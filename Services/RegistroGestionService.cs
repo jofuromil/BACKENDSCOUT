@@ -49,11 +49,21 @@ namespace BackendScout.Services
 
             if (registro == null)
             {
+                // ✅ Validación de existencia real en la base de datos
+                var unidadExiste = await _context.Unidades.AnyAsync(u => u.Id == usuario.UnidadId);
+                var grupoExiste = await _context.GruposScout.AnyAsync(g => g.Id == usuario.Unidad.GrupoScout.Id);
+                var gestionExiste = await _context.Gestiones.AnyAsync(g => g.Id == gestionId);
+
+                if (!unidadExiste || !grupoExiste || !gestionExiste)
+                    throw new Exception("Datos de unidad, grupo o gestión inválidos o inexistentes en la base de datos.");
+
                 var nuevoRegistro = new RegistroGestion
                 {
                     Id = Guid.NewGuid(),
                     UsuarioId = usuarioId,
                     GestionId = gestionId,
+                    UnidadId = usuario.UnidadId.Value,
+                    GrupoScoutId = usuario.Unidad.GrupoScout.Id,
                     AprobadoGrupo = true,
                     FechaAprobadoGrupo = DateTime.UtcNow
                 };
@@ -68,6 +78,7 @@ namespace BackendScout.Services
 
             await _context.SaveChangesAsync();
         }
+
 
         public async Task QuitarRegistroDeUsuarioAsync(Guid usuarioId, Guid gestionId)
         {
@@ -285,20 +296,20 @@ namespace BackendScout.Services
             return resumen;
         }
         // CORREGIDO: Usar Guid en lugar de int
-public async Task<List<RegistroGestion>> ObtenerRegistrosPorGrupoAsync(int grupoId, Guid gestionId)
-{
-    return await _context.RegistrosGestion
-        .Include(r => r.Usuario)
-        .Include(r => r.Unidad)
-        .ThenInclude(u => u.GrupoScout)
-        
-        .Where(r =>
-            r.Unidad != null &&
-            r.Unidad.GrupoScoutId == grupoId &&
-            r.GestionId == gestionId && // Guid == Guid
-            r.EnviadoADistrito)
-        .ToListAsync();
-}
+        public async Task<List<RegistroGestion>> ObtenerRegistrosPorGrupoAsync(int grupoId, Guid gestionId)
+        {
+            return await _context.RegistrosGestion
+                .Include(r => r.Usuario)
+                .Include(r => r.Unidad)
+                .ThenInclude(u => u.GrupoScout)
+
+                .Where(r =>
+                    r.Unidad != null &&
+                    r.Unidad.GrupoScoutId == grupoId &&
+                    r.GestionId == gestionId && // Guid == Guid
+                    r.EnviadoADistrito)
+                .ToListAsync();
+        }
 
         public async Task AprobarRegistroDesdeDistritoAsync(Guid usuarioId, Guid gestionId)
         {
@@ -313,6 +324,21 @@ public async Task<List<RegistroGestion>> ObtenerRegistrosPorGrupoAsync(int grupo
 
             registro.AprobadoDistrito = true;
             registro.FechaAprobadoDistrito = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+        }
+        public async Task AprobarTodosPendientesDistritoAsync(int distritoId)
+        {
+            var registros = await _context.RegistrosGestion
+                .Include(r => r.Unidad)
+                .Where(r => r.Unidad.NivelDistritoId == distritoId && r.EnviadoADistrito && !r.AprobadoDistrito)
+                .ToListAsync();
+
+            foreach (var r in registros)
+            {
+                r.AprobadoDistrito = true;
+                r.FechaAprobadoDistrito = DateTime.UtcNow;
+            }
 
             await _context.SaveChangesAsync();
         }

@@ -45,6 +45,7 @@ namespace BackendScout.Models
 
         [ForeignKey("UnidadId")]
         public Unidad Unidad { get; set; }
+        public int? GrupoScoutId { get; set; }
 
     }
 }

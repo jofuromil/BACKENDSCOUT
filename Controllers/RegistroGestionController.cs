@@ -3,6 +3,7 @@ using BackendScout.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using BackendScout.DTOs;
 
 namespace BackendScout.Controllers
 {
@@ -211,14 +212,14 @@ namespace BackendScout.Controllers
                 rama = r.Usuario.Rama,
                 tipo = r.Usuario.Tipo,
                 unidadNombre = r.Usuario.Unidad?.Nombre ?? "",
-                grupoNombre = r.Usuario.GrupoScoutUsuarios?.FirstOrDefault()?.GrupoScout?.Nombre ?? "",
+                grupoNombre = r.Unidad.GrupoScout.Nombre,
                 aprobadoDistrito = r.AprobadoDistrito
             });
 
             return Ok(resultado);
         }
         [HttpPost("aprobar-distrito")]
-        public async Task<IActionResult> AprobarRegistroDesdeDistrito([FromBody] Guid usuarioId)
+        public async Task<IActionResult> AprobarRegistroDesdeDistrito([FromBody] AprobacionDistritoRequest request)
         {
             var gestion = await _gestionService.ObtenerGestionActivaAsync();
             if (gestion == null)
@@ -226,13 +227,19 @@ namespace BackendScout.Controllers
 
             try
             {
-                await _registroService.AprobarRegistroDesdeDistritoAsync(usuarioId, gestion.Id);
+                await _registroService.AprobarRegistroDesdeDistritoAsync(request.UsuarioId, gestion.Id);
                 return Ok(new { mensaje = "Registro aprobado desde distrito." });
             }
             catch (Exception ex)
             {
                 return BadRequest(new { error = ex.Message });
             }
+        }
+        [HttpPost("aprobar-todos/{distritoId}")]
+        public async Task<IActionResult> AprobarTodos(int distritoId)
+        {
+            await _registroGestionService.AprobarTodosPendientesDistritoAsync(distritoId);
+            return Ok();
         }
 
     }
