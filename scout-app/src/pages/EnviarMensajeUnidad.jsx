@@ -1,6 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
 import MenuFijo from "@/components/MenuFijo";
+// Fondo decorativo
+import fondoScout from "@/assets/fondo-scout-suave.png";
 
 function EnviarMensajeUnidad() {
   const [contenido, setContenido] = useState("");
@@ -34,7 +36,15 @@ function EnviarMensajeUnidad() {
   };
 
   return (
-    <div className="min-h-screen bg-white pb-20">
+    <div
+          className="min-h-screen bg-white text-gray-800 flex flex-col pb-24 pt-20"
+          style={{
+            backgroundImage: `url(${fondoScout})`,
+            backgroundRepeat: "repeat",
+            backgroundSize: "contain"
+          }}
+        >
+    <div className="min-h-screen pb-20">
       {/* Menú fijo superior (pantallas grandes) */}
       <div className="hidden lg:block fixed top-0 left-0 right-0 z-50">
         <MenuFijo />
@@ -42,7 +52,7 @@ function EnviarMensajeUnidad() {
 
       {/* Contenido principal */}
       <div className="max-w-2xl mx-auto pt-6 px-4">
-        <div className="bg-white p-6 rounded shadow">
+        <div className=" rounded shadow">
           <h2 className="text-2xl font-bold mb-4">📤 Enviar Mensaje a la Unidad</h2>
 
           {mensajeRespuesta && (
@@ -58,7 +68,7 @@ function EnviarMensajeUnidad() {
                 value={contenido}
                 onChange={(e) => setContenido(e.target.value)}
                 required
-                className="w-full border rounded p-2"
+                className=" bg-white w-full border rounded p-2"
                 rows={4}
               ></textarea>
             </div>
@@ -69,7 +79,7 @@ function EnviarMensajeUnidad() {
                 type="file"
                 accept="image/*"
                 onChange={(e) => setImagen(e.target.files[0])}
-                className="w-full"
+                className="text-blue-500 w-full"
               />
             </div>
 
@@ -78,7 +88,7 @@ function EnviarMensajeUnidad() {
               <input
                 type="file"
                 onChange={(e) => setArchivo(e.target.files[0])}
-                className="w-full"
+                className="text-blue-500 w-full"
               />
             </div>
 
@@ -96,6 +106,7 @@ function EnviarMensajeUnidad() {
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50">
         <MenuFijo />
       </div>
+    </div>
     </div>
   );
 }

@@ -55,15 +55,100 @@ export default function PanelDistrito() {
         </div>
       ))}
 
-      {/* Aquí puedes ir agregando botones para las funciones reales */}
-      <div className="mt-6 space-y-3">
-        <button
-          onClick={() => navigate("/distrito/registros")}
-          className="w-full bg-purple-700 text-white px-4 py-2 rounded-xl shadow"
-        >
-          Validar registros enviados
-        </button>
-        {/* Más botones para: crear eventos, ver listas por grupo, etc. */}
+      {/* SECCIÓN 1: GESTIÓN REGISTROS */}
+      <div className="mt-6">
+        <h2 className="text-lg font-semibold text-purple-700 mb-2">
+          Gestión de Registros
+        </h2>
+        <div className="space-y-2">
+          <button
+            onClick={() => navigate("/distrito/registros")}
+            className="w-full bg-purple-700 text-white px-4 py-2 rounded-xl shadow"
+          >
+            Validar registros enviados
+          </button>
+          <button
+            onClick={() => navigate("/distrito/resumen-registros")}
+            className="w-full bg-purple-500 text-white px-4 py-2 rounded-xl shadow"
+          >
+            Ver resumen de registros
+          </button>
+          <button
+            onClick={() => navigate("/distrito/listas-registros")}
+            className="w-full bg-purple-500 text-white px-4 py-2 rounded-xl shadow"
+          >
+            Ver listas de registros
+          </button>
+          <button
+            onClick={() => navigate("/distrito/enviar-nacional")}
+            className="w-full bg-purple-500 text-white px-4 py-2 rounded-xl shadow"
+          >
+            Enviar registros al nivel nacional
+          </button>
+        </div>
+      </div>
+
+      {/* SECCIÓN 2: MENSAJES */}
+      <div className="mt-8">
+        <h2 className="text-lg font-semibold text-purple-700 mb-2">Mensajes</h2>
+        <div className="space-y-2">
+          <button
+            onClick={() => navigate("/distrito/mensajes/enviar")}
+            className="w-full bg-purple-600 text-white px-4 py-2 rounded-xl shadow"
+          >
+            Enviar mensajes
+          </button>
+          <button
+            onClick={() => navigate("/distrito/mensajes")}
+            className="w-full bg-purple-600 text-white px-4 py-2 rounded-xl shadow"
+          >
+            Ver mensajes
+          </button>
+        </div>
+      </div>
+
+      {/* SECCIÓN 3: EVENTOS */}
+      <div className="mt-8">
+        <h2 className="text-lg font-semibold text-purple-700 mb-2">Eventos</h2>
+        <div className="space-y-2">
+          <button
+            onClick={() => navigate("/distrito/eventos/crear")}
+            className="w-full bg-purple-600 text-white px-4 py-2 rounded-xl shadow"
+          >
+            Crear evento
+          </button>
+          <button
+            onClick={() => navigate("/distrito/eventos/validar-inscripciones")}
+            className="w-full bg-purple-600 text-white px-4 py-2 rounded-xl shadow"
+          >
+            Validar registros a eventos
+          </button>
+          <button
+            onClick={() => navigate("/distrito/eventos")}
+            className="w-full bg-purple-600 text-white px-4 py-2 rounded-xl shadow"
+          >
+            Ver eventos del distrito
+          </button>
+        </div>
+      </div>
+
+      {/* SECCIÓN 4: NIVELES */}
+      <div className="mt-8">
+        <h2 className="text-lg font-semibold text-purple-700 mb-2">Niveles</h2>
+        <div className="space-y-2">
+          <button
+            onClick={() => navigate("/panel-dirigente")}
+            className="w-full bg-purple-400 text-white px-4 py-2 rounded-xl shadow"
+          >
+            Ir al Panel de Dirigente
+          </button>
+          <button
+            onClick={() => navigate("/grupo")}
+            className="w-full bg-purple-400 text-white px-4 py-2 rounded-xl shadow"
+          >
+            Ir al Panel de Grupo
+          </button>
+        </div>
       </div>
 
       <MenuFijoDistrito />

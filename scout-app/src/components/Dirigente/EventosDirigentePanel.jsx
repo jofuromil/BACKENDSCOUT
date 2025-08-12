@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+// Fondo decorativo
+import fondoScout from "@/assets/fondo-scout-suave.png";
 
 const EventosDirigentePanel = () => {
   const [eventos, setEventos] = useState([]);
@@ -41,6 +43,14 @@ const EventosDirigentePanel = () => {
   }, [navigate]);
 
   return (
+    <div
+      className="min-h-screen bg-white text-gray-800 flex flex-col pb-24 pt-20"
+      style={{
+        backgroundImage: `url(${fondoScout})`,
+        backgroundRepeat: "repeat",
+        backgroundSize: "contain"
+      }}
+    >
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-4">Eventos de mi Unidad</h2>
       <button
@@ -88,6 +98,7 @@ const EventosDirigentePanel = () => {
           </tbody>
         </table>
       )}
+    </div>
     </div>
   );
 };

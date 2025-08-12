@@ -54,7 +54,7 @@ function ValidarObjetivos() {
           {objetivosPendientes.map((obj) => (
             <li
               key={obj.idSeleccion}
-              className="border p-3 rounded shadow flex justify-between items-start"
+              className=" bg-white border p-3 rounded shadow flex justify-between items-start"
             >
               <div>
                 <p className="font-semibold text-blue-800">

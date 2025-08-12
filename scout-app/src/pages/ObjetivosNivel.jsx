@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MenuFijo from "@/components/MenuFijo";
+// Fondo decorativo
+import fondoScout from "@/assets/fondo-scout-suave.png";
 
 function ObjetivosNivel() {
   const navigate = useNavigate();
@@ -37,7 +39,15 @@ function ObjetivosNivel() {
   };
 
   return (
-    <div className="min-h-screen bg-white pb-20 flex flex-col items-center justify-center p-6 text-center">
+    <div
+          className="min-h-screen bg-white text-gray-800 flex flex-col pb-24"
+          style={{
+            backgroundImage: `url(${fondoScout})`,
+            backgroundRepeat: "repeat",
+            backgroundSize: "contain"
+          }}
+        >
+    <div className="min-h-screen pb-20 flex flex-col items-center justify-center p-6 text-center">
       {/* Menú fijo superior */}
       <div className="hidden lg:block fixed top-0 left-0 right-0 z-50">
         <MenuFijo />
@@ -49,7 +59,7 @@ function ObjetivosNivel() {
       <select
         value={nivel}
         onChange={(e) => setNivel(e.target.value)}
-        className="p-3 text-lg w-72 mb-4 border rounded"
+        className=" bg-white p-3 text-lg w-72 mb-4 border rounded"
       >
         {opcionesNivel.map((op, i) => (
           <option key={i} value={op}>
@@ -62,7 +72,7 @@ function ObjetivosNivel() {
       <select
         value={area}
         onChange={(e) => setArea(e.target.value)}
-        className="p-3 text-lg w-72 mb-6 border rounded"
+        className=" bg-white p-3 text-lg w-72 mb-6 border rounded"
       >
         {opcionesArea.map((op, i) => (
           <option key={i} value={op}>
@@ -82,6 +92,7 @@ function ObjetivosNivel() {
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50">
         <MenuFijo />
       </div>
+    </div>
     </div>
   );
 }

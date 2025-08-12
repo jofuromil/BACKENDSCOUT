@@ -241,6 +241,18 @@ namespace BackendScout.Controllers
             await _registroGestionService.AprobarTodosPendientesDistritoAsync(distritoId);
             return Ok();
         }
-
+        [HttpPost("aprobar-todos-por-grupo/{grupoId}")]
+        public async Task<IActionResult> AprobarTodosPorGrupo(int grupoId)
+        {
+            try
+            {
+                await _registroGestionService.AprobarTodosPendientesPorGrupoAsync(grupoId);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno al aprobar todos: {ex.Message}");
+            }
+        }
     }
 }

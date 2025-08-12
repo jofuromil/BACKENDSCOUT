@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import MenuFijo from "../../components/MenuFijo";
+// Fondo decorativo
+import fondoScout from "@/assets/fondo-scout-suave.png";
 
 export default function EspecialidadesResumenDirigente() {
   const [scouts, setScouts] = useState([]);
@@ -20,7 +22,15 @@ export default function EspecialidadesResumenDirigente() {
   }, [unidadId, token]);
 
   return (
-    <div className="min-h-screen bg-white text-gray-800 flex flex-col pb-20">
+    <div
+          className="min-h-screen bg-white text-gray-800 flex flex-col pb-24 pt-20"
+          style={{
+            backgroundImage: `url(${fondoScout})`,
+            backgroundRepeat: "repeat",
+            backgroundSize: "contain"
+          }}
+        >
+    <div className="min-h-screen text-gray-800 flex flex-col pb-20">
       {/* Menú fijo superior para pantallas grandes */}
       <div className="hidden lg:block fixed top-0 left-0 right-0 z-50">
         <MenuFijo />
@@ -33,7 +43,7 @@ export default function EspecialidadesResumenDirigente() {
           <p>No hay datos de especialidades para mostrar.</p>
         ) : (
           scouts.map((scout) => (
-            <div key={scout.scoutId} className="mb-8">
+            <div key={scout.scoutId} className=" bg-white mb-8">
               <h3 className="font-semibold text-lg mb-2">{scout.nombreCompleto}</h3>
               {scout.especialidades.length === 0 ? (
                 <p className="text-sm text-gray-600">Sin especialidades aún.</p>
@@ -76,6 +86,7 @@ export default function EspecialidadesResumenDirigente() {
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50">
         <MenuFijo />
       </div>
+    </div>
     </div>
   );
 }

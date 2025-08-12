@@ -44,6 +44,9 @@ function Inicio() {
         localStorage.setItem("grupoId", usuario.unidad.grupoId);
         localStorage.setItem("grupoScout", usuario.unidad.grupoScout);
         localStorage.setItem("distrito", usuario.unidad.distrito);
+        if (usuario.unidad.nivelDistritoId) {
+          localStorage.setItem("distritoId", usuario.unidad.nivelDistritoId);
+        }
       }
 
       const tipo = data.user.tipo.toLowerCase();

@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import MenuFijo from "@/components/MenuFijo";
+// Fondo decorativo
+import fondoScout from "@/assets/fondo-scout-suave.png";
 
 export default function PerfilUsuario() {
   const [perfil, setPerfil] = useState(null);
@@ -49,7 +51,15 @@ export default function PerfilUsuario() {
   if (!perfil) return <p className="p-4">⏳ Cargando perfil...</p>;
 
   return (
-    <div className="min-h-screen bg-white pb-20 relative">
+    <div
+          className="min-h-screen bg-white text-gray-800 flex flex-col pb-24 pt-20"
+          style={{
+            backgroundImage: `url(${fondoScout})`,
+            backgroundRepeat: "repeat",
+            backgroundSize: "contain"
+          }}
+        >
+    
       <div className="hidden lg:block fixed top-0 left-0 right-0 z-50">
         <MenuFijo />
       </div>
@@ -126,6 +136,7 @@ export default function PerfilUsuario() {
         <MenuFijo />
       </div>
     </div>
+    
   );
 }
 
@@ -142,5 +153,6 @@ function Campo({ nombre, valor, name, editable, onChange, tipo = "text" }) {
         onChange={onChange}
       />
     </div>
+    
   );
 }

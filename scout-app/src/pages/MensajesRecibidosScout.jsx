@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import MenuFijo from "@/components/MenuFijo";
+// Fondo decorativo
+import fondoScout from "@/assets/fondo-scout-suave.png";
 
 function MensajesRecibidosScout() {
   const [mensajes, setMensajes] = useState([]);
@@ -35,7 +37,15 @@ function MensajesRecibidosScout() {
   }, [token]);
 
   return (
-    <div className="min-h-screen bg-white pb-20">
+    <div
+          className="min-h-screen bg-white text-gray-800 flex flex-col pb-24 pt-20"
+          style={{
+            backgroundImage: `url(${fondoScout})`,
+            backgroundRepeat: "repeat",
+            backgroundSize: "contain"
+          }}
+        >
+    <div className="min-h-screen pb-20">
       {/* Menú fijo superior (escritorio) */}
       <div className="hidden lg:block fixed top-0 left-0 right-0 z-50">
         <MenuFijo />
@@ -43,7 +53,7 @@ function MensajesRecibidosScout() {
 
       {/* Contenido */}
       <div className="max-w-2xl mx-auto pt-6 px-4">
-        <div className="bg-white p-6 rounded shadow">
+        <div className=" p-6 rounded shadow">
           <h2 className="text-2xl font-bold mb-4">📩 Mensajes de tu Unidad</h2>
 
           {mensajes.length === 0 ? (
@@ -91,6 +101,7 @@ function MensajesRecibidosScout() {
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50">
         <MenuFijo />
       </div>
+    </div>
     </div>
   );
 }

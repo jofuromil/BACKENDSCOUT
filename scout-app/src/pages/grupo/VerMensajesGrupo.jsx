@@ -53,22 +53,24 @@ export default function VerMensajesGrupo() {
   }, [grupoId, token]);
 
   return (
-    <div className="min-h-screen pt-20 p-4 bg-white text-black">
-      <MenuFijoGrupo />
-      <h2 className="text-2xl font-bold mb-4 text-center">
-        Mensajes del Grupo Scout
-      </h2>
+    <div className="min-h-screen bg-white text-black flex flex-col pb-24 pt-20">
+      {/* Menú fijo superior en escritorio */}
+      <div className="hidden lg:block fixed top-0 left-0 right-0 z-50">
+        <MenuFijoGrupo />
+      </div>
 
-      {cargando ? (
-        <p className="text-center">Cargando mensajes...</p>
-      ) : mensajes.length === 0 ? (
-        <p className="text-center text-gray-600">No hay mensajes disponibles.</p>
-      ) : (
-        <div className="space-y-6 max-w-3xl mx-auto">
-          {mensajes.map((m) => {
-            console.log("Mensaje:", m);
-            console.log("¿Es admin del grupo?", esAdminGrupo);
-            return (
+      <div className="p-4 flex-grow">
+        <h2 className="text-2xl font-bold mb-4 text-center">
+          Mensajes del Grupo Scout
+        </h2>
+
+        {cargando ? (
+          <p className="text-center">Cargando mensajes...</p>
+        ) : mensajes.length === 0 ? (
+          <p className="text-center text-gray-600">No hay mensajes disponibles.</p>
+        ) : (
+          <div className="space-y-6 max-w-3xl mx-auto">
+            {mensajes.map((m) => (
               <div
                 key={m.id}
                 className="border rounded p-4 shadow bg-gray-50 flex flex-col gap-2"
@@ -117,10 +119,15 @@ export default function VerMensajesGrupo() {
                   </button>
                 )}
               </div>
-            );
-          })}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Menú fijo inferior en móvil */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50">
+        <MenuFijoGrupo />
+      </div>
     </div>
   );
 }

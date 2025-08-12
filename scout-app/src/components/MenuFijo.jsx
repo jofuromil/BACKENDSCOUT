@@ -20,9 +20,9 @@ export default function MenuFijo() {
 
   const botonesScout = [
     { icono: <Home />, texto: "Inicio", ruta: "/panel-scout" },
-    { icono: <Target />, texto: "Objetivos", ruta: "/scout/objetivos" },
-    { icono: <Mail />, texto: "Mensajes", ruta: "/mensajes-recibidos" },
-    { icono: <Star />, texto: "Especialidades", ruta: "/registrar-avance-especialidades" },
+    { icono: <Target />, texto: "Mis Objetivos", ruta: "/scout/objetivos" },
+    { icono: <Mail />, texto: "Mensajes Grupo", ruta: "/scout/ver-mensajesA" },
+    { icono: <Star />, texto: "Mis Especialidades", ruta: "/mis-especialidades" },
     { icono: <User />, texto: "Yo", ruta: "/kardex" },
   ];
 

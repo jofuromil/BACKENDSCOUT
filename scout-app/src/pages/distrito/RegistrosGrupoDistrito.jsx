@@ -45,15 +45,25 @@ export default function RegistrosGrupoDistrito() {
   }, []);
 
   const aprobarTodos = async () => {
+    if (!grupoId) {
+      alert("No se encontró el ID del grupo.");
+      return;
+    }
+
     try {
       await axios.post(
-        `http://localhost:8080/api/registrogestion/aprobar-todos/${grupoId}`,
+        `http://localhost:8080/api/registrogestion/aprobar-todos-por-grupo/${grupoId}`,
         {},
-        { headers: { Authorization: `Bearer ${token}` } }
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
-      await obtenerRegistros(); // Refrescar tabla
+      alert("✅ Se aprobaron todos los registros pendientes de este grupo.");
+      await obtenerRegistros();
     } catch (error) {
-      console.error("Error al aprobar todos los registros:", error);
+      console.error("Error al aprobar todos los registros del grupo:", error);
       alert("No se pudo aprobar todos los registros.");
     }
   };
@@ -172,3 +182,4 @@ export default function RegistrosGrupoDistrito() {
     </div>
   );
 }
+

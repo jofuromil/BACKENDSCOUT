@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import MenuFijo from "@/components/MenuFijo";
+// Fondo decorativo
+import fondoScout from "@/assets/fondo-scout-suave.png";
 
 export default function KardexScout() {
   const { scoutId } = useParams();
@@ -46,7 +48,15 @@ export default function KardexScout() {
   if (!usuario) return <p className="p-4">⏳ Cargando Kardex...</p>;
 
   return (
-    <div className="min-h-screen bg-white pb-20">
+    <div
+          className="min-h-screen bg-white text-gray-800 flex flex-col pb-24 pt-20"
+          style={{
+            backgroundImage: `url(${fondoScout})`,
+            backgroundRepeat: "repeat",
+            backgroundSize: "contain"
+          }}
+        >
+    <div className="min-h-screen pb-20">
       {/* Menú fijo superior */}
       <div className="hidden lg:block fixed top-0 left-0 right-0 z-50">
         <MenuFijo />
@@ -134,6 +144,7 @@ export default function KardexScout() {
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50">
         <MenuFijo />
       </div>
+    </div>
     </div>
   );
 }

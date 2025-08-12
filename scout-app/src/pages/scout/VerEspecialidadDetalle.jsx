@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import MenuFijo from "@/components/MenuFijo";
+// Fondo decorativo
+import fondoScout from "@/assets/fondo-scout-suave.png";
 
 export default function VerEspecialidadDetalle() {
   const { id } = useParams();
@@ -51,7 +53,15 @@ export default function VerEspecialidadDetalle() {
   };
 
   return (
-    <div className="min-h-screen bg-white pb-20">
+    <div
+          className="min-h-screen bg-white text-gray-800 flex flex-col pb-24 pt-15"
+          style={{
+            backgroundImage: `url(${fondoScout})`,
+            backgroundRepeat: "repeat",
+            backgroundSize: "contain"
+          }}
+        >
+    <div className="min-h-screen pb-20">
       {/* Menú fijo superior para pantallas grandes */}
       <div className="hidden lg:block fixed top-0 left-0 right-0 z-50">
         <MenuFijo />
@@ -63,7 +73,7 @@ export default function VerEspecialidadDetalle() {
             <img
               src={especialidad.imagenUrl}
               alt={especialidad.nombre}
-              className="w-32 h-32 rounded-full object-cover"
+              className="w-35 h-35 rounded-full object-cover"
             />
           </div>
         )}
@@ -114,6 +124,7 @@ export default function VerEspecialidadDetalle() {
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50">
         <MenuFijo />
       </div>
+    </div>
     </div>
   );
 }

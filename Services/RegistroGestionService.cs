@@ -342,5 +342,25 @@ namespace BackendScout.Services
 
             await _context.SaveChangesAsync();
         }
+        public async Task AprobarTodosPendientesPorGrupoAsync(int grupoId)
+{
+    var registros = await _context.RegistrosGestion
+        .Include(r => r.Unidad)
+        .Where(r =>
+            r.Unidad != null &&
+            r.Unidad.GrupoScoutId == grupoId &&
+            r.EnviadoADistrito &&
+            !r.AprobadoDistrito)
+        .ToListAsync();
+
+    foreach (var registro in registros)
+    {
+        registro.AprobadoDistrito = true;
+        registro.FechaAprobadoDistrito = DateTime.UtcNow; // ✅ nombre correcto
+    }
+
+    await _context.SaveChangesAsync();
+}
+
     }
 }

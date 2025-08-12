@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import MenuFijo from "@/components/MenuFijo";
+// Fondo decorativo
+import fondoScout from "@/assets/fondo-scout-suave.png";
+
 
 const ObjetivosScoutPanel = () => {
   const { scoutId } = useParams();
@@ -59,13 +62,21 @@ const ObjetivosScoutPanel = () => {
   if (error) return <div className="p-4 text-red-600">{error}</div>;
 
   return (
-    <div className="min-h-screen bg-white pb-20 relative">
+    <div
+              className="min-h-screen text-gray-800 flex flex-col pb-24 pt-4"
+              style={{
+                backgroundImage: `url(${fondoScout})`,
+                backgroundRepeat: "repeat",
+                backgroundSize: "contain"
+              }}
+            >
+    <div className="min-h-screen pb-20 relative">
       {/* Menú fijo superior */}
       <div className="hidden lg:block fixed top-0 left-0 right-0 z-50">
         <MenuFijo />
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 pt-6">
+      <div className="max-w-5xl mx-auto px-4 pt-20">
         {nombreScout && (
           <h1 className="text-xl font-semibold text-center text-gray-800 mb-4">
             Objetivos de: <span className="text-blue-700">{nombreScout}</span>
@@ -144,12 +155,14 @@ const ObjetivosScoutPanel = () => {
           </section>
         </div>
       </div>
+  </div>
 
       {/* Menú fijo inferior en móviles */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50">
         <MenuFijo />
       </div>
     </div>
+  
   );
 };
 

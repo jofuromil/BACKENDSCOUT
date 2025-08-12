@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+// Fondo decorativo
+import fondoScout from "@/assets/fondo-scout-suave.png";
 
 function VerMensajesUnidad() {
   const [mensajes, setMensajes] = useState([]);
@@ -51,7 +53,15 @@ function VerMensajesUnidad() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto mt-10 bg-white p-6 rounded shadow">
+    <div
+          className="min-h-screen bg-white text-gray-800 flex flex-col pb-24 pt-20"
+          style={{
+            backgroundImage: `url(${fondoScout})`,
+            backgroundRepeat: "repeat",
+            backgroundSize: "contain"
+          }}
+        >
+    <div className="max-w-2xl mx-auto mt-10 p-6 rounded shadow">
       <h2 className="text-2xl font-bold mb-4">📬 Mensajes enviados a la unidad</h2>
 
       <div className="mb-6 space-x-2">
@@ -108,6 +118,7 @@ function VerMensajesUnidad() {
           ))}
         </ul>
       )}
+    </div>
     </div>
   );
 }
