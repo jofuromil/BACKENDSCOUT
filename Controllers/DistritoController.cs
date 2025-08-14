@@ -18,10 +18,18 @@ namespace BackendScout.Controllers
 
         // Solo AdminDistrito debería poder ver esto (ajusta el policy/role según tu sistema)
         [HttpGet("{distritoId}/resumen-registros")]
-        [Authorize] 
+        [Authorize]
         public async Task<ActionResult<ResumenDistritoDto>> GetResumenRegistros([FromRoute] int distritoId)
         {
             var dto = await _resumenService.ObtenerResumenAsync(distritoId);
+            return Ok(dto);
+        }
+    
+        [HttpGet("{distritoId}/listas-registros")]
+        [Authorize]
+        public async Task<ActionResult<ListasDistritoDto>> GetListasRegistros([FromRoute] int distritoId)
+        {
+            var dto = await _resumenService.ObtenerListasAsync(distritoId);
             return Ok(dto);
         }
     }
