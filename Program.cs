@@ -96,6 +96,7 @@ builder.Services.AddScoped<GestionService>();
 builder.Services.AddScoped<MensajeGrupoService>();
 builder.Services.AddHostedService<MensajeLimpiezaService>();
 builder.Services.AddScoped<DistritoUsuarioService>();
+builder.Services.AddScoped<DistritoResumenService>();
 
 
 
