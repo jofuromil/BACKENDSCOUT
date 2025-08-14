@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using BackendScout.DTOs;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BackendScout.Controllers
 {
@@ -14,7 +15,6 @@ namespace BackendScout.Controllers
         private readonly RegistroGestionService _registroService;
         private readonly UserService _userService;
         private readonly GestionService _gestionService;
-        private readonly RegistroGestionService _registroGestionService;
 
         public RegistroGestionController(
             RegistroGestionService registroService,
@@ -187,7 +187,7 @@ namespace BackendScout.Controllers
         {
             try
             {
-                var resumen = await _registroGestionService.ObtenerResumenPorDistritoPorUsuarioAsync(usuarioId);
+                var resumen = await _registroService.ObtenerResumenPorDistritoPorUsuarioAsync(usuarioId);
                 return Ok(resumen);
             }
             catch (Exception ex)
@@ -213,11 +213,13 @@ namespace BackendScout.Controllers
                 tipo = r.Usuario.Tipo,
                 unidadNombre = r.Usuario.Unidad?.Nombre ?? "",
                 grupoNombre = r.Unidad.GrupoScout.Nombre,
-                aprobadoDistrito = r.AprobadoDistrito
+                aprobadoDistrito = r.AprobadoDistrito,
+                enviadoANacional = r.EnviadoANacional   // 👈 agregado
             });
 
             return Ok(resultado);
         }
+
         [HttpPost("aprobar-distrito")]
         public async Task<IActionResult> AprobarRegistroDesdeDistrito([FromBody] AprobacionDistritoRequest request)
         {
@@ -238,7 +240,7 @@ namespace BackendScout.Controllers
         [HttpPost("aprobar-todos/{distritoId}")]
         public async Task<IActionResult> AprobarTodos(int distritoId)
         {
-            await _registroGestionService.AprobarTodosPendientesDistritoAsync(distritoId);
+            await _registroService.AprobarTodosPendientesDistritoAsync(distritoId);
             return Ok();
         }
         [HttpPost("aprobar-todos-por-grupo/{grupoId}")]
@@ -246,13 +248,34 @@ namespace BackendScout.Controllers
         {
             try
             {
-                await _registroGestionService.AprobarTodosPendientesPorGrupoAsync(grupoId);
+                await _registroService.AprobarTodosPendientesPorGrupoAsync(grupoId);
                 return Ok();
             }
             catch (Exception ex)
             {
                 return StatusCode(500, $"Error interno al aprobar todos: {ex.Message}");
             }
+        }
+        [HttpPost("enviar-a-nacional/{grupoId:int}")]
+        [Authorize]
+        public async Task<IActionResult> EnviarANacionalPorGrupo([FromRoute] int grupoId)
+        {
+            var count = await _registroService.EnviarANacionalPorGrupoAsync(grupoId);
+            return Ok(new { enviados = count });
+        }
+        [HttpPost("enviar-a-nacional/individual")]
+        [Authorize]
+        public async Task<IActionResult> EnviarANacionalIndividual([FromBody] EnviarNacionalDto body)
+        {
+            if (body == null || body.UsuarioId == Guid.Empty)
+                return BadRequest(new { enviado = false, error = "usuarioId inválido" });
+
+            var ok = await _registroService.EnviarANacionalIndividualAsync(body.UsuarioId);
+            return ok ? Ok(new { enviado = true }) : BadRequest(new { enviado = false });
+        }
+        public class EnviarNacionalDto
+        {
+            public Guid UsuarioId { get; set; }
         }
     }
 }

@@ -9,6 +9,13 @@ namespace BackendScout.Services
     public class RegistroGestionService
     {
         private readonly AppDbContext _context;
+        private async Task<Guid?> GetGestionActivaIdAsync()
+        {
+            return await _context.Gestiones
+                .Where(g => g.EstaActiva)
+                .Select(g => (Guid?)g.Id)
+                .FirstOrDefaultAsync();
+        }
 
         public RegistroGestionService(AppDbContext context)
         {
@@ -361,7 +368,51 @@ namespace BackendScout.Services
 
             await _context.SaveChangesAsync();
         }
-        
+        public async Task<int> EnviarANacionalPorGrupoAsync(int grupoId)
+        {
+            var gestionId = await GetGestionActivaIdAsync();
+            if (gestionId == null) return 0;
+
+            var registros = await _context.RegistrosGestion
+                .AsTracking()
+                .Include(r => r.Unidad)
+                .Where(r =>
+                    r.GestionId == gestionId.Value &&             // 👈 gestión activa
+                    r.Unidad != null &&
+                    r.Unidad.GrupoScoutId == grupoId &&
+                    r.AprobadoDistrito &&
+                    !r.EnviadoANacional)
+                .ToListAsync();
+
+            foreach (var r in registros)
+                r.EnviadoANacional = true; // tu modelo no tiene fecha de envío
+
+            await _context.SaveChangesAsync();
+            return registros.Count;
+        }
+        // (opcional) enviar individual
+        public async Task<bool> EnviarANacionalIndividualAsync(Guid usuarioId)
+        {
+            var gestionId = await GetGestionActivaIdAsync();
+            if (gestionId == null) return false;
+
+            // Busca el registro del usuario en la gestión ACTIVA que esté aprobado y no enviado
+            var reg = await _context.RegistrosGestion
+                .AsTracking()
+                .Where(r =>
+                    r.GestionId == gestionId.Value &&             // 👈 gestión activa
+                    r.UsuarioId == usuarioId &&
+                    r.AprobadoDistrito &&
+                    !r.EnviadoANacional)
+                .OrderByDescending(r => r.FechaAprobadoDistrito ?? DateTime.MinValue)
+                .FirstOrDefaultAsync();
+
+            if (reg == null) return false;
+
+            reg.EnviadoANacional = true;
+            await _context.SaveChangesAsync();
+            return true;
+        }
 
     }
 }
