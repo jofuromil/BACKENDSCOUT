@@ -65,7 +65,7 @@ export default function PanelDistrito() {
             onClick={() => navigate("/distrito/registros")}
             className="w-full bg-purple-700 text-white px-4 py-2 rounded-xl shadow"
           >
-            Validar registros enviados
+            Gestión de Registros
           </button>
           <button
             onClick={() => navigate("/distrito/resumen-registros")}
@@ -78,12 +78,6 @@ export default function PanelDistrito() {
             className="w-full bg-purple-500 text-white px-4 py-2 rounded-xl shadow"
           >
             Ver listas de registros
-          </button>
-          <button
-            onClick={() => navigate("/distrito/enviar-nacional")}
-            className="w-full bg-purple-500 text-white px-4 py-2 rounded-xl shadow"
-          >
-            Enviar registros al nivel nacional
           </button>
         </div>
       </div>

@@ -64,7 +64,7 @@ export default function RegistrosDistrito() {
         {distritoNombre}
       </h1>
       <h2 className="text-xl font-semibold mb-6">
-        Aprobar Registro de los Grupos Scouts
+        Registros de los Grupos Scouts
       </h2>
 
       {grupos.length === 0 ? (
@@ -80,7 +80,7 @@ export default function RegistrosDistrito() {
             >
               <p className="font-semibold text-lg">{grupo.nombreGrupo}</p>
               <p>
-                Registros enviados: <strong>{grupo.enviados}</strong>
+                Registros recibidos: <strong>{grupo.enviados}</strong>
               </p>
               <p>
                 Registros aprobados: <strong>{grupo.aprobados}</strong>
