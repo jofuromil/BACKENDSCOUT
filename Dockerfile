@@ -1,23 +1,17 @@
-# Etapa 1: build
+# ====== BUILD ======
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /app
+WORKDIR /src
+# Copia el csproj y restaura
+COPY *.csproj ./
+RUN dotnet restore ./BackendScout.csproj
+# Copia el resto del código y publica
+COPY . .
+RUN dotnet publish ./BackendScout.csproj -c Release -o /app/publish
 
-COPY . ./
-
-# Instalar EF
-RUN dotnet tool install --global dotnet-ef
-ENV PATH="$PATH:/root/.dotnet/tools"
-
-RUN dotnet restore
-
-# ✅ Ejecutar migraciones con parámetros explícitos
-
-RUN dotnet publish "BackendScout.csproj" -c Release -o /app/publish
-
-# Etapa 2: runtime
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
+# ====== RUNTIME ======
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 COPY --from=build /app/publish .
-
-EXPOSE 80
+EXPOSE 8080
+ENV ASPNETCORE_URLS=http://+:8080
 ENTRYPOINT ["dotnet", "BackendScout.dll"]

@@ -97,7 +97,7 @@ builder.Services.AddScoped<MensajeGrupoService>();
 builder.Services.AddHostedService<MensajeLimpiezaService>();
 builder.Services.AddScoped<DistritoUsuarioService>();
 builder.Services.AddScoped<DistritoResumenService>();
-
+builder.Services.AddScoped<NacionalService>();
 
 
 // ✅ Base de datos

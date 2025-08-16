@@ -15,6 +15,7 @@ function PanelDirigente() {
   const [esAdminGrupoScout, setEsAdminGrupoScout] = useState(false);
   const [unidadInfoVisible, setUnidadInfoVisible] = useState(false);
   const [tieneRolDistrito, setTieneRolDistrito] = useState(false);
+  const [tieneRolNacional, setTieneRolNacional] = useState(false); // 👈 NUEVO
 
   const navigate = useNavigate();
 
@@ -47,20 +48,30 @@ function PanelDirigente() {
           localStorage.setItem("codigoUnidad", user.unidad.codigoUnidad);
         }
 
-        // 2) Verificar rol a nivel distrito (fiable: desde backend)
+        // 2) Verificar rol a nivel distrito (desde backend)
         if (user?.id) {
           try {
             const resDistrito = await axios.get(
               `http://localhost:8080/api/DistritoUsuario/distritos/${user.id}`,
               { headers: { Authorization: `Bearer ${token}` } }
             );
-            // Si tiene al menos un registro distrital, mostramos el botón
             setTieneRolDistrito(Array.isArray(resDistrito.data) && resDistrito.data.length > 0);
           } catch {
             setTieneRolDistrito(false);
           }
         } else {
           setTieneRolDistrito(false);
+        }
+
+        // 3) Verificar rol a nivel nacional (AdminNacional) 👇
+        try {
+          const resNacional = await axios.get(
+            "http://localhost:8080/api/nacional/soy-admin",
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          setTieneRolNacional(!!resNacional.data?.esAdminNacional);
+        } catch {
+          setTieneRolNacional(false);
         }
       } catch (err) {
         alert("Error al cargar los datos del dirigente.");
@@ -191,7 +202,7 @@ function PanelDirigente() {
           </div>
 
           {/* Niveles Superiores */}
-          {(esAdminGrupoScout || tieneRolDistrito) && (
+          {(esAdminGrupoScout || tieneRolDistrito || tieneRolNacional) && (
             <div className="mb-6">
               <h2 className="text-xl font-semibold mb-2">Niveles Superiores</h2>
 
@@ -204,13 +215,22 @@ function PanelDirigente() {
                 </button>
               )}
 
-              {/* AHORA SÍ: solo visible si TIENE rol de distrito */}
               {tieneRolDistrito && (
                 <button
                   onClick={() => navigate("/distrito")}
-                  className="border-2 border-indigo-600 text-indigo-700 px-4 py-2 rounded-full w-full"
+                  className="border-2 border-indigo-600 text-indigo-700 px-4 py-2 rounded-full w-full mb-2"
                 >
                   Ir al Panel de Distrito
+                </button>
+              )}
+
+              {/* 👇 NUEVO: visible sólo si es AdminNacional */}
+              {tieneRolNacional && (
+                <button
+                  onClick={() => navigate("/nacional/panel")}
+                  className="border-2 border-green-700 text-green-800 px-4 py-2 rounded-full w-full"
+                >
+                  Ir al Panel Nacional
                 </button>
               )}
             </div>

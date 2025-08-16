@@ -41,6 +41,7 @@ namespace BackendScout.Models
         // Relación con distritos
         public List<NivelDistritoUsuario>? NivelDistritoUsuarios { get; set; }
         public List<DistritoUsuario>? DistritoUsuarios { get; set; }
+        public List<RolNacionalUsuario>? RolesNacionales { get; set; }
 
     }
 }

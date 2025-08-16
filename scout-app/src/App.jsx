@@ -46,6 +46,9 @@ import RegistrosDistrito from "./pages/distrito/RegistrosDistrito";
 import RegistrosGrupoDistrito from "./pages/distrito/RegistrosGrupoDistrito";
 import ResumenRegistrosDistrito from "./pages/distrito/ResumenRegistrosDistrito";
 import ListasRegistrosDistrito from "./pages/distrito/ListasRegistrosDistrito";
+import PanelNacional from "@/pages/nacional/PanelNacional";
+import AprobarRegistrosNacional from "@/pages/nacional/AprobarRegistrosNacional";
+import AprobarRegistrosNacionalDistrito from "@/pages/nacional/AprobarRegistrosNacionalDistrito";
 
 function App() {
   return (
@@ -100,6 +103,9 @@ function App() {
         <Route path="/distrito/registros/:grupoId" element={<RegistrosGrupoDistrito />} />
         <Route path="/distrito/resumen-registros" element={<ResumenRegistrosDistrito />} />
         <Route path="/distrito/listas-registros" element={<ListasRegistrosDistrito />} />
+        <Route path="/nacional/panel" element={<PanelNacional />} />
+        <Route path="/nacional/aprobar-registros" element={<AprobarRegistrosNacional />} />
+        <Route path="/nacional/aprobar-registros/distrito/:distritoId" element={<AprobarRegistrosNacionalDistrito />} />
       </Routes>
     </Router>
   );

@@ -36,6 +36,7 @@ namespace BackendScout.Data
         // ✅ DbSet corregido
         public DbSet<NivelDistrito> NivelesDistrito { get; set; }
         public DbSet<DistritoUsuario> DistritoUsuarios { get; set; }
+        public DbSet<RolNacionalUsuario> RolesNacionales { get; set; }
 
 
         public void LimpiarRequisitosInvalidos()
