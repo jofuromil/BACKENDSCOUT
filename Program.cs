@@ -1,37 +1,52 @@
 using BackendScout.Data;
 using BackendScout.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using QuestPDF.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using QuestPDF.Infrastructure;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
-using System.Security.Claims;
 using Microsoft.Extensions.FileProviders;
 
-// ✅ Activar licencia QuestPDF
 QuestPDF.Settings.License = LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ✅ Clave JWT desde appsettings.json o valor por defecto
+// =======================
+// JWT Key (config o fallback)
+// =======================
 var jwtKey = builder.Configuration["Jwt:Key"] ?? "clave-secreta-super-segura-scout";
 
-// ✅ CORS para React (http://localhost:5173)
+// =======================
+// Detección de entorno/proveedor DB
+// =======================
+bool isRailway =
+    !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("RAILWAY_ENVIRONMENT")) ||
+    !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("RAILWAY_PROJECT_ID"));
+
+bool usePostgres = isRailway || Environment.GetEnvironmentVariable("USE_POSTGRES") == "1";
+
+// =======================
+// CORS dinámico
+// =======================
+string frontendOrigin =
+    Environment.GetEnvironmentVariable("FRONTEND_ORIGIN")?.TrimEnd('/') ??
+    "http://localhost:5173";
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        policy.WithOrigins(frontendOrigin)
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
 });
 
-// ✅ Servicios base
+// =======================
+// Servicios base
+// =======================
 builder.Services.AddControllers()
     .AddJsonOptions(opts =>
     {
@@ -69,12 +84,14 @@ builder.Services.AddSwaggerGen(c =>
                     Id = "Bearer"
                 }
             },
-            new string[] {}
+            Array.Empty<string>()
         }
     });
 });
 
-// ✅ Servicios personalizados
+// =======================
+// Servicios personalizados
+// =======================
 builder.Services.AddScoped<GrupoScoutService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<UnidadService>();
@@ -99,12 +116,31 @@ builder.Services.AddScoped<DistritoUsuarioService>();
 builder.Services.AddScoped<DistritoResumenService>();
 builder.Services.AddScoped<NacionalService>();
 
+// =======================
+// Base de datos: SQLite local / PostgreSQL en Railway
+// =======================
+if (usePostgres)
+{
+    string host = Environment.GetEnvironmentVariable("POSTGRES_HOST") ?? "localhost";
+    string db   = Environment.GetEnvironmentVariable("POSTGRES_DB") ?? "scoutdb";
+    string user = Environment.GetEnvironmentVariable("POSTGRES_USER") ?? "scoutuser";
+    string pass = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD") ?? "scoutpass";
+    string portDb = Environment.GetEnvironmentVariable("POSTGRES_PORT") ?? "5432";
 
-// ✅ Base de datos
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+    var pgConn = $"Host={host};Port={portDb};Database={db};Username={user};Password={pass};Pooling=true;";
 
-// ✅ Configuración JWT
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseNpgsql(pgConn));
+}
+else
+{
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+}
+
+// =======================
+// Autenticación JWT
+// =======================
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -123,26 +159,35 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+// =======================
+// Host/puerto
+// =======================
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 builder.WebHost.UseUrls($"http://*:{port}");
 
 var app = builder.Build();
 
+// =======================
+// Seed inicial
+// =======================
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     SeedData.Inicializar(context);
 }
 
-// ✅ Swagger
+// =======================
+// Swagger
+// =======================
 app.UseSwagger();
 app.UseSwaggerUI();
 
-// ✅ Archivos estáticos normales
+// =======================
+// Archivos estáticos
+// =======================
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
-// ✅ Archivos adjuntos expuestos (carpeta para mensajes del grupo)
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new PhysicalFileProvider(
@@ -150,15 +195,30 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/archivos"
 });
 
-// ✅ CORS: debe ir ANTES de UseAuthentication y UseAuthorization
+// =======================
+// CORS
+// =======================
 app.UseCors("AllowReactApp");
 
-// ✅ Seguridad
+// =======================
+// Seguridad
+// =======================
 app.UseAuthentication();
 app.UseAuthorization();
 
-// ✅ Controladores
+// =======================
+// Controladores
+// =======================
 app.MapControllers();
 
-app.Run();
+// =======================
+// Migraciones automáticas opcionales
+// =======================
+if (Environment.GetEnvironmentVariable("APPLY_MIGRATIONS") == "1")
+{
+    using var scopeMigrate = app.Services.CreateScope();
+    var dbCtx = scopeMigrate.ServiceProvider.GetRequiredService<AppDbContext>();
+    dbCtx.Database.Migrate();
+}
 
+app.Run();
